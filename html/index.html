@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>象棋</title>
+
+    <meta charset="utf-8">
+
+    <!-- Kube CSS -->
+    <link rel="stylesheet" href="../static/lib/kube-6.5.2/css/kube.css">
+
+    <link rel="stylesheet" href="../static/css/chess.css">
+</head>
+<body>
+
+    <div class="outter-wrapper">
+        <div class="hero">
+            <h1 class="title text-center">象棋</h1>
+        </div>
+
+        <div class="row align-center">
+            <div class="col col-6">
+                <div class="chessboard-container">
+                    <div class="chessboard-bg full-absolute">
+                        <!--这个容器可能会透明，所以不包含子元素-->
+                    </div>
+                    <div class="chessboard-main full-absolute">
+                        <div class="chessboard-grid-container full-area">
+                            <!--上 一行-->
+                            <div class="row auto chessboard-row">
+                                <div class="col chessboard-gird">
+                                    <div class="chessboard-gird-height"><!--占高元素--></div>
+                                    <div class="chess-pieces-location"><!--棋子位置容器--></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chessboard-line-backslash"></div>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chessboard-line-slash"></div>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                    <!--最后一列的棋子位置容器-->
+                                    <div class="chess-pieces-location chess-pieces-location--col-last"></div>
+                                </div>
+                            </div>
+                            
+                            <!--上 二行-->
+                            <div class="row auto chessboard-row">
+                                <div class="col chessboard-gird">
+                                    <div class="chessboard-gird-height"><!--占高元素--></div>
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"><!--棋子位置容器--></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chessboard-line-slash"></div>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chessboard-line-backslash"></div>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                    <!--最后一列的棋子位置容器-->
+                                    <div class="chess-pieces-location chess-pieces-location--col-last"></div>
+                                </div>
+                            </div>
+                            
+                            <!--上 三行-->
+                            <div class="row auto chessboard-row">
+                                <div class="col chessboard-gird">
+                                    <div class="chessboard-gird-height"><!--占高元素--></div>
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RT"><!--定位标识--></span>
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"><!--棋子位置容器--></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LT"><!--定位标识--></span>
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RT"><!--定位标识--></span>
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LT"><!--定位标识--></span>
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                    <!--最后一列的棋子位置容器-->
+                                    <div class="chess-pieces-location chess-pieces-location--col-last"></div>
+                                </div>
+                            </div>
+                            
+                            <!--上 四行-->
+                            <div class="row auto chessboard-row">
+                                <div class="col chessboard-gird">
+                                    <div class="chessboard-gird-height"><!--占高元素--></div>
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LT"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"><!--棋子位置容器--></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RT"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LT"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RT"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LT"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RT"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LT"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RT"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                    <!--最后一列的棋子位置容器-->
+                                    <div class="chess-pieces-location chess-pieces-location--col-last"></div>
+                                </div>
+                            </div>
+                            
+                            <!--楚河汉界-->
+                            <div class="row auto chessboard-row chessboard-row-river">
+                                <div class="col chessboard-gird">
+                                    <div class="chessboard-gird-height"><!--占高元素--></div>
+                                    <div class="chess-pieces-location"><!--棋子位置容器--></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                    <!--最后一列的棋子位置容器-->
+                                    <div class="chess-pieces-location chess-pieces-location--col-last"></div>
+                                </div>
+                            </div>
+                            
+                            <!--下 一行-->
+                            <div class="row auto chessboard-row">
+                                <div class="col chessboard-gird">
+                                    <div class="chessboard-gird-height"><!--占高元素--></div>
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"><!--棋子位置容器--></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                    <!--最后一列的棋子位置容器-->
+                                    <div class="chess-pieces-location chess-pieces-location--col-last"></div>
+                                </div>
+                            </div>
+                            
+                            <!--下 二行-->
+                            <div class="row auto chessboard-row">
+                                <div class="col chessboard-gird">
+                                    <div class="chessboard-gird-height"><!--占高元素--></div>
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LT"><!--定位标识--></span>
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"><!--棋子位置容器--></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RT"><!--定位标识--></span>
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LT"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RT"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LT"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RT"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LT"><!--定位标识--></span>
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RT"><!--定位标识--></span>
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LB"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                    <!--最后一列的棋子位置容器-->
+                                    <div class="chess-pieces-location chess-pieces-location--col-last"></div>
+                                </div>
+                            </div>
+                            
+                            <!--下 三行-->
+                            <div class="row auto chessboard-row">
+                                <div class="col chessboard-gird">
+                                    <div class="chessboard-gird-height"><!--占高元素--></div>
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RT"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"><!--棋子位置容器--></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LT"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chessboard-line-backslash"></div>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chessboard-line-slash"></div>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--RT"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <span class="chess-pieces-location-corner chess-pieces-location-corner--LT"><!--定位标识--></span>
+                                    <div class="chess-pieces-location"></div>
+                                    <!--最后一列的棋子位置容器-->
+                                    <div class="chess-pieces-location chess-pieces-location--col-last"></div>
+                                </div>
+                            </div>
+                            
+                            <!--下 四行-->
+                            <div class="row auto chessboard-row">
+                                <div class="col chessboard-gird">
+                                    <div class="chessboard-gird-height"><!--占高元素--></div>
+                                    <div class="chess-pieces-location"><!--棋子位置容器--></div>
+                                    <!--最后一行补充的棋子位置容器-->
+                                    <div class="chess-pieces-location chess-pieces-location--row-last"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                    <!--最后一行补充的棋子位置容器-->
+                                    <div class="chess-pieces-location chess-pieces-location--row-last"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                    <!--最后一行补充的棋子位置容器-->
+                                    <div class="chess-pieces-location chess-pieces-location--row-last"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chessboard-line-slash"></div>
+                                    <div class="chess-pieces-location"></div>
+                                    <!--最后一行补充的棋子位置容器-->
+                                    <div class="chess-pieces-location chess-pieces-location--row-last"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chessboard-line-backslash"></div>
+                                    <div class="chess-pieces-location"></div>
+                                    <!--最后一行补充的棋子位置容器-->
+                                    <div class="chess-pieces-location chess-pieces-location--row-last"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                    <!--最后一行补充的棋子位置容器-->
+                                    <div class="chess-pieces-location chess-pieces-location--row-last"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                    <!--最后一行补充的棋子位置容器-->
+                                    <div class="chess-pieces-location chess-pieces-location--row-last"></div>
+                                </div>
+                                <div class="col chessboard-gird">
+                                    <div class="chess-pieces-location"></div>
+                                    <!--最后一列的棋子位置容器-->
+                                    <div class="chess-pieces-location chess-pieces-location--col-last"></div>
+
+                                    <!--最后一行补充的棋子位置容器-->
+                                    <div class="chess-pieces-location chess-pieces-location--row-last"></div>
+
+                                    <!--最后补充的一行棋子容器还要再补充一列-->
+                                    <div class="chess-pieces-location chess-pieces-location--row-last chess-pieces-location--col-last"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kube JS + jQuery are used for some functionality, but are not required for the basic setup -->
+    <script src="../static/lib/jquery/jquery-2.2.0.min.js"></script>
+    <script src="../static/lib/kube-6.5.2/js/kube.js"></script>
+</body>
+</html>

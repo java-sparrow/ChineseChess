@@ -1,0 +1,159 @@
+/* layout */
+.outter-wrapper {
+    max-width: 1080px;
+    margin: 0 auto;
+}
+
+.hero {
+    padding: 30px 0 20px;
+}
+
+/* utils */
+.full-absolute {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+}
+.full-area {
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+}
+
+/* chinese chess */
+.chessboard-container {
+    position: relative;
+    z-index: 10;
+    /*需要根据 .chessboard-main 的 padding 微调*/
+    padding-bottom: 111.2%;
+}
+/*该容器提供棋盘木纹背景*/
+.chessboard-bg {
+    opacity: 0.75;
+    background-image: url(img/woodGrain.jpg);
+    background-size: contain;
+}
+/*该容器提供棋盘内边距*/
+.chessboard-main {
+    padding: 4%;
+}
+/*该容器画棋盘外框*/
+.chessboard-grid-container {
+    border: 1px solid black;
+}
+/*棋盘行元素用来画内部横线*/
+.chessboard-row {
+    position: relative;
+    z-index: 10;
+}
+.chessboard-row::before {
+    content: '';
+    position: absolute;
+    z-index: 10;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: black;
+}
+.chessboard-row:last-child::before {
+    background: transparent;
+}
+
+/*棋盘格子*/
+.chessboard-gird {
+    position: relative;
+    z-index: 10;
+}
+/*使用伪元素画竖线*/
+.chessboard-gird::before {
+    content: '';
+    position: absolute;
+    z-index: 10;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 1px;
+    background: black;
+}
+/*最后一行的补充格子 及 棋盘中间的楚河汉界 不需要竖线*/
+.chessboard-gird:last-child::before,
+.chessboard-row-river .chessboard-gird::before {
+    background: transparent;
+}
+/*独立的 高度占位元素*/
+.chessboard-gird-height {
+    padding-bottom: 100%;
+}
+
+/*棋子定位标识（小折角）*/
+.chess-pieces-location-corner {
+    position: absolute;
+    z-index: 10;
+    width: 15%;
+    height: 15%;
+    border-width: 0;
+    border-style: solid;
+    border-color: black;
+}
+.chess-pieces-location-corner--LT {
+    left: 10%;
+    top: 10%;
+    border-left-width: 1px;
+    border-top-width: 1px;
+}
+.chess-pieces-location-corner--RT {
+    right: 10%;
+    top: 10%;
+    border-right-width: 1px;
+    border-top-width: 1px;
+}
+.chess-pieces-location-corner--LB {
+    left: 10%;
+    bottom: 10%;
+    border-left-width: 1px;
+    border-bottom-width: 1px;
+}
+.chess-pieces-location-corner--RB {
+    right: 10%;
+    bottom: 10%;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+}
+
+/*斜线及反斜线*/
+.chessboard-line-slash,
+.chessboard-line-backslash {
+    position: absolute;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+}
+.chessboard-line-slash {
+    /*利用背景渐变来画斜线，实现方案参考自 http://www.sohu.com/a/120126126_463987 */
+    background: linear-gradient(135deg, transparent 49.3%, black 49.3%, black 50.5%, transparent 50.5%);
+}
+.chessboard-line-backslash {
+    background: linear-gradient(45deg, transparent 49.3%, black 49.3%, black 50.5%, transparent 50.5%);
+}
+
+/*棋子位置容器，用来放棋子的，位置已固定好*/
+.chess-pieces-location {
+    position: absolute;
+    z-index: 10;
+    top: -50%;
+    left: -50%;
+    width: 100%;
+    height: 100%;
+}
+.chess-pieces-location--col-last {
+    left: auto;
+    right: -50%;
+}
+.chess-pieces-location--row-last {
+    top: auto;
+    bottom: -50%;
+}
