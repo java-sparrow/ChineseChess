@@ -28,7 +28,7 @@
     position: relative;
     z-index: 10;
     /*需要根据 .chessboard-main 的 padding 微调*/
-    padding-bottom: 111.2%;
+    padding-bottom: 110.9%;
 }
 /*该容器提供棋盘木纹背景*/
 .chessboard-bg {
@@ -38,7 +38,7 @@
 }
 /*该容器提供棋盘内边距*/
 .chessboard-main {
-    padding: 4%;
+    padding: 6%;
 }
 /*该容器画棋盘外框*/
 .chessboard-grid-container {
@@ -148,6 +148,7 @@
     left: -50%;
     width: 100%;
     height: 100%;
+    padding: 4%;
 }
 .chess-pieces-location--col-last {
     left: auto;
@@ -156,4 +157,41 @@
 .chess-pieces-location--row-last {
     top: auto;
     bottom: -50%;
+}
+
+/*棋子样式*/
+.chess-pieces {
+    width: 100%;
+    height: 100%;
+    padding: 10%;
+    border-radius: 50%;
+    background: #f4ebe2;
+}
+/*棋子边框*/
+.chess-pieces-border {
+    /*flex布局让子元素水品垂直居中*/
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+/*棋子的字*/
+.chess-pieces-character {
+    font-size: 30px;
+}
+/*棋子红色样式*/
+.chess-pieces--red .chess-pieces-border {
+    border: 1px solid #f20d2b;
+}
+.chess-pieces--red .chess-pieces-character {
+    color: #f20d2b;
+}
+/*棋子黑色样式*/
+.chess-pieces--black .chess-pieces-border {
+    border: 1px solid #333;
+}
+.chess-pieces--black .chess-pieces-character {
+    color: #333;
 }
