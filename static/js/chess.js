@@ -171,6 +171,8 @@ class Chessboard {
         this.locationArray = this.createLocationArray();
         // 初始化棋点格子的座标信息
         this.initLocationInfo();
+        // 初始化棋子
+        this.initChessPiece();
     }
 
     /**
@@ -228,12 +230,106 @@ class Chessboard {
 
         return new ChessPiece(options);
     }
+
+    /**
+     * 初始化棋子（在棋盘上布置双方各16子）
+     */
+    initChessPiece() {
+        Chessboard.getInitChessPieceOptionsArray()
+            .forEach(options => this.addChessPiece(options));
+    }
 }
 /*
  * 静态属性
  */
 Chessboard.LOCATION_X_ATTRNAME = "location-x";
 Chessboard.LOCATION_Y_ATTRNAME = "location-y";
+
+/*
+ * 静态方法
+ */
+
+/**
+ * 获取 双方棋子初始化配置数组
+ * @return {Array<Object>} 双方棋子初始化配置数组
+ */
+Chessboard.getInitChessPieceOptionsArray = (function () {
+    // 根据配置对象和位置转换方法（水平对称或垂直对称），创建另一个配置对象
+    var createSymmetricalOptions = (options, convertLocation) => {
+        var [x, y] = options.location;
+
+        return Object.assign({}, options, {location: convertLocation([x, y])});
+    };
+    // 水平位置对称转换方法
+    var convertHorizontalLocation = ([x, y]) => [8 - x, y];
+    // 垂直位置对称转换方法
+    var convertVerticalLocation = ([x, y]) => [x, 9 - y];
+
+    // 存放（单方）棋子初始化配置的数组（长度：2 + 7 * 2 = 16）
+    var singleSideChessPieceOptionsArray = [
+        // 首先是中线上的棋子
+        // 帅
+        {
+            character: ChessPiece.CHARACTER_KING,
+            location:[4, 9]
+        },
+        // 兵
+        {
+            character: ChessPiece.CHARACTER_SOLDIERS,
+            location:[4, 6]
+        }
+    ];
+    // 然后，遍历其它非中线棋子 并将 其 和 位置信息水平对称之后的配置对象 一起放入棋子初始化配置数组中
+    [
+        // 车
+        {
+            character: ChessPiece.CHARACTER_ROOKS,
+            location:[0, 9]
+        },
+        // 马
+        {
+            character: ChessPiece.CHARACTER_KNIGHTS,
+            location:[1, 9]
+        },
+        // 相
+        {
+            character: ChessPiece.CHARACTER_ELEPHANTS,
+            location:[2, 9]
+        },
+        // 仕
+        {
+            character: ChessPiece.CHARACTER_GUARDS,
+            location:[3, 9]
+        },
+        // 炮
+        {
+            character: ChessPiece.CHARACTER_CANNONS,
+            location:[1, 7]
+        },
+        // 兵
+        {
+            character: ChessPiece.CHARACTER_SOLDIERS,
+            location:[0, 6]
+        },
+        {
+            character: ChessPiece.CHARACTER_SOLDIERS,
+            location:[2, 6]
+        }
+        // 将棋子配置 及 对称的配置 放入存放棋子初始化配置的数组中
+    ].forEach(options => singleSideChessPieceOptionsArray.push(options, createSymmetricalOptions(options, convertHorizontalLocation)));
+
+    // 双方棋子初始化配置数组（是 singleSideChessPieceOptionsArray 数组单独 map两次 再 concat 起来的新数组）
+    var doubleSideChessPieceOptionsArray = singleSideChessPieceOptionsArray.map(
+        // 设置第一种阵营
+        options => Object.assign({}, options, {playSide: PLAY_SIDE_FIRST})
+    ).concat(singleSideChessPieceOptionsArray.map(
+        // 设置第二种阵营（位置信息需要垂直对称）
+        options => Object.assign({}, createSymmetricalOptions(options, convertVerticalLocation), {playSide: PLAY_SIDE_SECOND})
+    ));
+
+    // 返回 长度为32 包含了 双方棋子初始化配置的数组
+    return () => doubleSideChessPieceOptionsArray;
+})();
 
 
 $(function () {
@@ -251,13 +347,4 @@ $(function () {
 
     // 进入开发模式
     $("body").addClass("debug-mode");
-
-
-    /* ----- 测试代码 -----*/
-    // 双方各放一个马
-    chessboard.addChessPiece({character: ChessPiece.CHARACTER_CANNONS, playSide: PLAY_SIDE_SECOND, location:[2, 2]});
-    chessboard.addChessPiece({character: ChessPiece.CHARACTER_CANNONS, playSide: PLAY_SIDE_FIRST, location:[6, 7]});
-    // 放置错误的棋子
-    chessboard.addChessPiece({character: ChessPiece.CHARACTER_ROOKS, location:[4, 18]});
-    chessboard.addChessPiece({character: ChessPiece.CHARACTER_ROOKS, location:[2, 2]});
 });
