@@ -154,6 +154,34 @@ ChessPiece.locationArray = (function () {
     return locationArray;
 })();
 
+
+// 开发模式：添加棋点位置坐标
+$(function () {
+    const LOCATION_X_ATTRNAME = "location-x";
+    const LOCATION_Y_ATTRNAME = "location-y";
+
+    // 为每个棋点格子添加座标信息
+    ChessPiece.locationArray.forEach((locationRowArray, rowIndex) => {
+        locationRowArray.forEach((locationElement, colIndex) => {
+            locationElement.attr(LOCATION_X_ATTRNAME, colIndex)
+                .attr(LOCATION_Y_ATTRNAME, rowIndex);
+        });
+    });
+
+    // 绑定 显示坐标 事件
+    var $_locationX = $("#locationX");
+    var $_locationY = $("#locationY");
+    ChessPiece.chessboardContainer.on("mouseover", "." + CHESSPIECE_LOCATION_CLASSNAME, function () {
+        var $_location = $(this);
+
+        $_locationX.text($_location.attr(LOCATION_X_ATTRNAME));
+        $_locationY.text($_location.attr(LOCATION_Y_ATTRNAME));
+    });
+
+    // 进入开发模式
+    $("body").addClass("debug-mode");
+});
+
 /* ----- 测试代码 -----*/
 // 双方各放一个马
 new ChessPiece({character: "马", playSide: PLAY_SIDE_SECOND, location:[2, 2]});

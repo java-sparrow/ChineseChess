@@ -195,3 +195,12 @@
 .chess-pieces--black .chess-pieces-character {
     color: #333;
 }
+
+/*开发模式下的样式*/
+.debug-mode .chess-pieces-location:hover {
+    background: rgba(0, 0, 255, 0.1);
+}
+.debug-mode .location-show {
+    display: block !important;
+    margin-left: 20px;
+}
