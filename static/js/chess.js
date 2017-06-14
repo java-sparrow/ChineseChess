@@ -33,16 +33,19 @@ class ChessPiece {
      * @param {Chessboard} options.chessboard 棋盘对象，标识棋子所属的棋盘
      */
     constructor({character, playSide, location: [x, y], isPutInChessboard, chessboard}) {
-        this.character = (character = character.charAt(0));
         this.chessboard = chessboard;
 
-        playSide = (playSide == PLAY_SIDE_FIRST) ? PLAY_SIDE_FIRST : PLAY_SIDE_SECOND;
-        this.playSide = playSide;
+        this.playSide = (playSide == PLAY_SIDE_FIRST) ? PLAY_SIDE_FIRST : PLAY_SIDE_SECOND;
+
+        // 容错：棋子名称只取第一个字，其余忽略
+        character = character.charAt(0);
+        // 根据棋子阵营 选择 棋子名称
+        this.character = (this.playSide == PLAY_SIDE_FIRST ? character : ChessPiece.getSecondCharacter(character));
 
         this.chessPieceElement = $(`
-            <div class="chess-pieces ${playSide.className}">
+            <div class="chess-pieces ${this.playSide.className}">
                 <div class="chess-pieces-border">
-                    <div class="chess-pieces-character">${character}</div>
+                    <div class="chess-pieces-character">${this.character}</div>
                 </div>
             </div>
         `);
@@ -122,6 +125,37 @@ class ChessPiece {
         return (targetLocation.find("." + CHESSPIECE_CLASSNAME).length > 0);
     }
 }
+
+/*
+ * 静态属性
+ */
+ChessPiece.CHARACTER_ROOKS = "车";
+ChessPiece.CHARACTER_KNIGHTS = "马";
+ChessPiece.CHARACTER_ELEPHANTS = "相";
+ChessPiece.CHARACTER_GUARDS = "仕";
+ChessPiece.CHARACTER_KING = "帅";
+ChessPiece.CHARACTER_CANNONS = "炮";
+ChessPiece.CHARACTER_SOLDIERS = "兵";
+
+/*
+ * 静态方法
+ */
+
+/**
+ * 根据第一种阵营的棋子名称，获取对应第二种阵营的棋子名称
+ * @param {String} character 第一种阵营的棋子名称
+ * @return {String} 第二种阵营的棋子名称
+ */
+ChessPiece.getSecondCharacter = character => ({
+    // "车": "车",
+    // "马": "马",
+    "相": "象",
+    "仕": "士",
+    "帅": "将",
+    "炮": "砲",
+    "兵": "卒"
+// 从Map对象中 获取对应的字符。若没有对应字符，则使用原字符
+}[character] || character);
 
 // 棋盘类定义
 class Chessboard {
@@ -221,9 +255,9 @@ $(function () {
 
     /* ----- 测试代码 -----*/
     // 双方各放一个马
-    chessboard.addChessPiece({character: "马", playSide: PLAY_SIDE_SECOND, location:[2, 2]});
-    chessboard.addChessPiece({character: "马", playSide: PLAY_SIDE_FIRST, location:[6, 7]});
+    chessboard.addChessPiece({character: ChessPiece.CHARACTER_CANNONS, playSide: PLAY_SIDE_SECOND, location:[2, 2]});
+    chessboard.addChessPiece({character: ChessPiece.CHARACTER_CANNONS, playSide: PLAY_SIDE_FIRST, location:[6, 7]});
     // 放置错误的棋子
-    chessboard.addChessPiece({character: "哪", location:[4, 18]});
-    chessboard.addChessPiece({character: "有", location:[2, 2]});
+    chessboard.addChessPiece({character: ChessPiece.CHARACTER_ROOKS, location:[4, 18]});
+    chessboard.addChessPiece({character: ChessPiece.CHARACTER_ROOKS, location:[2, 2]});
 });
