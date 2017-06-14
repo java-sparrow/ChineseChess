@@ -163,14 +163,20 @@ class Chessboard {
      * 构造器
      * @param {Object} options 配置对象
      * @param {String|jQueryObject} options.container 棋盘容器
+     * @param {boolean} isNeedInitAnimat 是否需要初始化动画，默认为 true
+     * @param {number} initAnimatIntervalSecond 初始化动画间隔时间，默认为 0.1秒
      */
-    constructor({container}) {
+    constructor({container, isNeedInitAnimat = true, initAnimatIntervalSecond = 0.1}) {
         // 棋盘容器
         this.container = $(container);
         // 棋点格子容器二维数组
         this.locationArray = this.createLocationArray();
         // 初始化棋点格子的座标信息
         this.initLocationInfo();
+
+        // 动画相关选项
+        this.isNeedInitAnimat = isNeedInitAnimat;
+        this.initAnimatIntervalSecond = initAnimatIntervalSecond;
         // 初始化棋子
         this.initChessPiece();
     }
@@ -236,7 +242,20 @@ class Chessboard {
      */
     initChessPiece() {
         Chessboard.getInitChessPieceOptionsArray()
-            .forEach(options => this.addChessPiece(options));
+            // 为了更好的视觉效果，先对数组排序（从上到下，从左到右）
+            .sort(({location: [x1, y1]}, {location: [x2, y2]}) => ((y1 == y2) ? (x1 - x2) : (y1 - y2)))
+            .forEach((options, i) => {
+                // 间隔时间默认是0，即没有间隔
+                let intervalMillisecond = 0;
+
+                if (this.isNeedInitAnimat) {
+                    intervalMillisecond = this.initAnimatIntervalSecond * 1e3;
+                }
+
+                setTimeout(() => {
+                    this.addChessPiece(options);
+                }, i * intervalMillisecond)
+            });
     }
 }
 /*
