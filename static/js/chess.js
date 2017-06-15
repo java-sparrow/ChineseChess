@@ -29,12 +29,9 @@ class ChessPiece {
      * @param {String} options.character 棋子名称，如 “兵”
      * @param {String | Object} options.playSide 棋子阵营，默认值为 PLAY_SIDE_SECOND，有效值为 "红"、"黑" 或 PLAY_SIDE_FIRST、PLAY_SIDE_SECOND
      * @param {Object} options.location 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
-     * @param {boolean} options.isPutInChessboard 初始化后是否将棋子放置到棋盘上，默认为 true
      * @param {Chessboard} options.chessboard 棋盘对象，标识棋子所属的棋盘
      */
-    constructor({character, playSide, location: [x, y], isPutInChessboard, chessboard}) {
-        this.chessboard = chessboard;
-
+    constructor({character, playSide, location: [x, y], chessboard}) {
         this.playSide = (playSide == PLAY_SIDE_FIRST) ? PLAY_SIDE_FIRST : PLAY_SIDE_SECOND;
 
         // 容错：棋子名称只取第一个字，其余忽略
@@ -42,6 +39,7 @@ class ChessPiece {
         // 根据棋子阵营 选择 棋子名称
         this.character = (this.playSide == PLAY_SIDE_FIRST ? character : ChessPiece.getSecondCharacter(character));
 
+        // 棋子元素
         this.chessPieceElement = $(`
             <div class="chess-pieces ${this.playSide.className}">
                 <div class="chess-pieces-border">
@@ -50,12 +48,12 @@ class ChessPiece {
             </div>
         `);
 
-        // 初始化后 默认会将棋子放在棋盘上
-        if (isPutInChessboard !== false) {
-            if (!this.putInChessboard([x, y])) {
-                console.warn("[%s]方棋子[%s] 放置在 (%s, %s) 位置失败", this.playSide.toString() , this.character, x, y);
-            }
-        }
+        // 所属棋盘
+        this.chessboard = chessboard;
+
+        // 保存棋子初始化位置信息
+        this.initLocationX = x;
+        this.initLocationY = y;
 
         // 棋子当前位置（未放入棋盘时，值为-1）
         this.currentLocationX = -1;
@@ -63,72 +61,27 @@ class ChessPiece {
     }
 
     /**
-     * 放置棋子到棋盘
-     * @param {Array} locationArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
-     * @return {boolean} 若成功将棋子放入棋盘内，则返回 true，否则返回 false
+     * 获取棋子元素
+     * @return {jQueryObject} 棋子元素
      */
-    putInChessboard([x, y]) {
-        x = parseInt(x, 10);
-        y = parseInt(y, 10);
+    getChessPieceElement() {
+        return this.chessPieceElement;
+    }
 
-        if (!this.checkLocationRange([x, y])) {
-            return false;
-        }
-
-        if (this.hasChessPiece([x, y])) {
-            console.warn("该位置(%s, %s)有棋子，请重新选择其它落子位置", x, y);
-
-            return false;
-        }
-        
-        // 将棋子放入指定位置的容器中
-        this.chessPieceElement.appendTo(this.chessboard.locationArray[y][x]);
-        console.info("[%s]方棋子[%s] 成功放置至 (%s, %s) 位置", this.playSide.toString() , this.character, x, y);
-
-        // 保存棋子在棋盘的当前位置
+    /**
+     * 更新棋子的当前位置信息
+     * @param {Array} xyArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
+     */
+    updateCurrentLocation([x, y]) {
         this.currentLocationX = x;
         this.currentLocationY = y;
-
-        return true;
-    }
-
-    /**
-     * 校验位置范围
-     * @param {Array} locationArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
-     * @return {boolean} 位置范围在棋盘坐标内，则返回 true，否则返回 false
-     */
-    checkLocationRange([x, y]) {
-        // 有校验整数的必要？
-
-        if (x < 0 || x > 8) {
-            console.warn("横轴坐标范围为 0 ~ 8 之间的整数");
-            
-            return false;
-        }
-        else if (y < 0 ||y > 9) {
-            console.warn("纵轴坐标范围为 0 ~ 9 之间的整数");
-            
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * 判断指定位置是否有棋子存在
-     * @param {Array} locationArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
-     * @return {boolean} 若指定位置有棋子，则返回 true，否则返回 false
-     */
-    hasChessPiece([x, y]) {
-        var targetLocation = this.chessboard.locationArray[y][x];
-
-        return (targetLocation.find("." + CHESSPIECE_CLASSNAME).length > 0);
     }
 }
 
 /*
  * 静态属性
  */
+// 以下命名法，参考 https://www.zybang.com/question/cd851429401ca47079ab9b9fd80950e6.html
 ChessPiece.CHARACTER_ROOKS = "车";
 ChessPiece.CHARACTER_KNIGHTS = "马";
 ChessPiece.CHARACTER_ELEPHANTS = "相";
@@ -163,10 +116,11 @@ class Chessboard {
      * 构造器
      * @param {Object} options 配置对象
      * @param {String|jQueryObject} options.container 棋盘容器
-     * @param {boolean} isNeedInitAnimat 是否需要初始化动画，默认为 true
-     * @param {number} initAnimatIntervalSecond 初始化动画间隔时间，默认为 0.1秒
+     * @param {boolean} options.isInitChessPiece 是否初始化棋子，默认为 true
+     * @param {boolean} options.isNeedInitAnimat 是否需要初始化动画，默认为 true
+     * @param {number} options.initAnimatIntervalSecond 初始化动画间隔时间，默认为 0.1秒
      */
-    constructor({container, isNeedInitAnimat = true, initAnimatIntervalSecond = 0.1}) {
+    constructor({container, isInitChessPiece = true, isNeedInitAnimat = true, initAnimatIntervalSecond = 0.1}) {
         // 棋盘容器
         this.container = $(container);
         // 棋点格子容器二维数组
@@ -177,8 +131,11 @@ class Chessboard {
         // 动画相关选项
         this.isNeedInitAnimat = isNeedInitAnimat;
         this.initAnimatIntervalSecond = initAnimatIntervalSecond;
-        // 初始化棋子
-        this.initChessPiece();
+
+        // 默认会 初始化棋子
+        if (isInitChessPiece !== false) {
+            this.initChessPiece();
+        }
     }
 
     /**
@@ -225,16 +182,64 @@ class Chessboard {
             });
         });
     }
+    
+    /**
+     * 判断指定位置是否有棋子存在
+     * @param {Array} xyArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
+     * @return {boolean} 若指定位置有棋子，则返回 true，否则返回 false
+     */
+    hasChessPiece([x, y]) {
+        var targetLocation = this.locationArray[y][x];
+
+        return (targetLocation.find("." + CHESSPIECE_CLASSNAME).length > 0);
+    }
 
     /**
-     * 创建棋子对象，并把棋盘自身引用 作为 参数对象的chessboard属性值
-     * @param {Object} options 配置对象，详情请参见 ChessPiece 类构造器参数说明
-     * @return {ChessPiece} 新创建的棋子类对象
+     * 将指定棋子放置到棋盘上
+     * @param {ChessPiece} 需要放置的棋子对象
+     * @return {boolean} 若成功将棋子放入棋盘内，则返回 true，否则返回 false
+     */
+    putChessPiece(chessPiece) {
+        var x = parseInt(chessPiece.initLocationX, 10);
+        var y = parseInt(chessPiece.initLocationY, 10);
+
+        if (!Chessboard.checkLocationRange([x, y])) {
+            return false;
+        }
+
+        if (this.hasChessPiece([x, y])) {
+            console.warn("该位置(%s, %s)有棋子，请重新选择其它棋盘位置", x, y);
+
+            return false;
+        }
+
+        // 将棋子放入指定位置的容器中
+        this.locationArray[y][x].append(chessPiece.getChessPieceElement());
+        // 更新棋子的当前位置
+        chessPiece.updateCurrentLocation([x, y]);
+
+        console.info("[%s]方棋子[%s] 成功放置至 (%s, %s) 位置", chessPiece.playSide.toString() , chessPiece.character, x, y);
+
+        return true;
+    }
+
+    /**
+     * 创建棋子对象，并放置在棋盘上
+     * @param {Object} options 配置对象，详情请参见 ChessPiece 类的构造器参数说明
+     * @return {ChessPiece} 新创建的棋子对象
      */
     addChessPiece(options) {
+        // 把棋盘自身引用 作为 参数对象的 chessboard 属性值
         options.chessboard = this;
 
-        return new ChessPiece(options);
+        var chessPiece = new ChessPiece(options);
+
+        // 将新创建的棋子放在棋盘上
+        if (!this.putChessPiece(chessPiece)) {
+            console.warn("[%s]方棋子[%s] 放置在 (%s, %s) 位置失败", chessPiece.playSide.toString() , chessPiece.character, chessPiece.initLocationX, chessPiece.initLocationY);
+        }
+
+        return chessPiece;
     }
 
     /**
@@ -267,6 +272,28 @@ Chessboard.LOCATION_Y_ATTRNAME = "location-y";
 /*
  * 静态方法
  */
+
+/**
+ * 校验位置范围
+ * @param {Array} xyArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
+ * @return {boolean} 位置范围在棋盘坐标内，则返回 true，否则返回 false
+ */
+Chessboard.checkLocationRange = ([x, y]) => {
+    // 有校验整数的必要？
+
+    if (x < 0 || x > 8) {
+        console.warn("横轴坐标范围为 0 ~ 8 之间的整数");
+        
+        return false;
+    }
+    else if (y < 0 ||y > 9) {
+        console.warn("纵轴坐标范围为 0 ~ 9 之间的整数");
+        
+        return false;
+    }
+
+    return true;
+};
 
 /**
  * 获取 双方棋子初始化配置数组
