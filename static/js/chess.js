@@ -162,10 +162,8 @@ class Chessboard {
     constructor({container, isInitChessPiece = true, isNeedInitAnimat = true, initAnimatIntervalSecond = 0.1}) {
         // 棋盘容器
         this.container = $(container);
-        // 棋点格子容器二维数组
-        this.locationArray = this.createLocationArray();
-        // 初始化棋点格子的座标信息
-        this.initLocationInfo();
+        // 棋盘位置信息二维数组
+        this.locationInfoArray = this.createLocationInfoArray();
 
         // 动画相关选项
         this.isNeedInitAnimat = isNeedInitAnimat;
@@ -182,48 +180,47 @@ class Chessboard {
     }
 
     /**
-     * 创建 包含所有棋点格子容器的二维数组
-     * @return {Array<Array<jQueryObject>>} 包含所有棋点格子容器的二维数组
+     * 创建 棋盘位置信息二维数组，数组元素对象包括 棋点格子容器、棋点格子坐标、棋子对象 属性
+     * @return {Array<Array<Object>>} 棋盘位置信息二维数组，数组元素对象包括 棋点格子容器、棋点格子坐标、棋子对象（默认为null） 属性
      */
-    createLocationArray() {
-        var locationArray = [];
+    createLocationInfoArray() {
+        var elementArrays = [];
 
         this.container.find("." + CHESSBOARD_ROW_CLASSNAME).each(function (rowIndex, row) {
-            var locationRowArray = [];
+            var elementRowArray = [];
 
             $(this).find("." + CHESSPIECE_LOCATION_CLASSNAME).each(function (colIndex, col) {
-                var $_location = $(this);
+                var element = $(this);
 
                 // 最后一行每个格子 有两个棋子位置容器，所以这里需要提排除补充的棋子位置容器
-                if (!$_location.hasClass(CHESSPIECE_LOCATION_LASTROW_CLASSNAME)) {
-                    locationRowArray.push($_location);
+                if (!element.hasClass(CHESSPIECE_LOCATION_LASTROW_CLASSNAME)) {
+                    elementRowArray.push(element);
                 }
             });
 
-            locationArray.push(locationRowArray);
+            elementArrays.push(elementRowArray);
         });
 
         // 补充最后一行的棋子位置容器
-        var locationLastRowArray = [];
+        var elementLastRowArray = [];
         this.container.find("." + CHESSPIECE_LOCATION_LASTROW_CLASSNAME).each(function (colIndex, col) {
-            locationLastRowArray.push($(this));
+            elementLastRowArray.push($(this));
         });
-        locationArray.push(locationLastRowArray);
+        elementArrays.push(elementLastRowArray);
 
-        return locationArray;
-    }
-
-    /**
-     * 初始化棋点格子的座标信息
-     */
-    initLocationInfo() {
-        // 遍历二维数组，并为每个棋点格子添加座标信息
-        this.locationArray.forEach((locationRowArray, rowIndex) => {
-            locationRowArray.forEach((locationElement, colIndex) => {
-                locationElement.attr(Chessboard.LOCATION_X_ATTRNAME, colIndex)
+        // 将二维元素数组 转换为 棋盘位置信息二维数组（数组元素对象包括 棋点格子容器、棋点格子坐标、棋子对象 属性）
+        return elementArrays.map((elementRowArray, rowIndex) => elementRowArray.map((element, colIndex) => {
+            // 将棋点格子的坐标信息 添加到元素中
+            element.attr(Chessboard.LOCATION_X_ATTRNAME, colIndex)
                     .attr(Chessboard.LOCATION_Y_ATTRNAME, rowIndex);
-            });
-        });
+
+            return {
+                element,
+                rowIndex,
+                colIndex,
+                chessPiece: null
+            };
+        }));
     }
     
     /**
@@ -232,9 +229,7 @@ class Chessboard {
      * @return {boolean} 若指定位置有棋子，则返回 true，否则返回 false
      */
     hasChessPiece([x, y]) {
-        var targetLocation = this.locationArray[y][x];
-
-        return (targetLocation.find("." + CHESSPIECE_CLASSNAME).length > 0);
+        return this.locationInfoArray[y][x].chessPiece ? true : false;
     }
 
     /**
@@ -244,7 +239,16 @@ class Chessboard {
      */
     putChessPieceToLocation(chessPiece, [x, y]) {
         // 将棋子放入棋盘的指定位置
-        this.locationArray[y][x].append(chessPiece.getChessPieceElement());
+        this.locationInfoArray[y][x].element.append(chessPiece.getChessPieceElement());
+
+        // 更新 棋盘位置信息数组 对应位置的棋子对象
+        this.locationInfoArray[y][x].chessPiece = chessPiece;
+        // currentLocationX 不为负数，则需要解除旧的棋子引用。而该值为负数说明正在初始化棋盘，没有旧的棋子引用可以解除
+        if (chessPiece.currentLocationX >= 0) {
+            // 解除之前棋盘位置信息的棋子引用
+            this.locationInfoArray[chessPiece.currentLocationY][chessPiece.currentLocationX].chessPiece = null;
+        }
+
         // 更新棋子的当前位置
         chessPiece.updateCurrentLocation([x, y]);
     }
