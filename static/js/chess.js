@@ -174,6 +174,9 @@ class Chessboard {
             this.initChessPiece();
         }
 
+        // 绑定事件
+        this.bindEvent();
+
         /* --- 内部缓存 --- */
         // 棋盘上的棋子数组
         this._chessPieceArray = [];
@@ -332,6 +335,58 @@ class Chessboard {
         chessPiece.setTargetLocation(xyArray);
 
         this.putChessPieceToLocation(chessPiece, xyArray);
+    }
+
+    /**
+     * 根据 棋点格子容器 获取 棋点位置信息对象
+     * @param {jQueryObject} element 棋点格子容器的 包装jQuery对象
+     * @return {Object} 棋点位置信息对象
+     */
+    getLocationInfoByElement(element) {
+        var x = element.attr(Chessboard.LOCATION_X_ATTRNAME);
+        var y = element.attr(Chessboard.LOCATION_Y_ATTRNAME);
+
+        return this.locationInfoArray[y][x];
+    }
+
+    /**
+     * 绑定事件
+     */
+    bindEvent() {
+        // 缓存this引用
+        var chessboard = this;
+
+        // （被点击时）激活的棋子元素
+        var activeElement = null;
+
+        // 棋子元素 点击事件
+        this.container.on("click", "." + CHESSPIECE_CLASSNAME, function () {
+            activeElement = $(this);
+
+            return false;
+        })
+        // 棋点格子容器 点击事件
+        .on("click", "." + CHESSPIECE_LOCATION_CLASSNAME, function () {
+            if (!activeElement) {
+                return;
+            }
+
+            // 原位置的 棋点位置信息对象
+            var originLocationInfo = chessboard.getLocationInfoByElement(activeElement.parent());
+            // 目标位置的 棋点位置信息对象
+            var targetLocationInfo = chessboard.getLocationInfoByElement($(this));
+            var targetXyArray = [targetLocationInfo.colIndex, targetLocationInfo.rowIndex];
+
+            // 棋子移动信息
+            var moveInfo = originLocationInfo.chessPiece.makeInfo("[$side]方棋子[$name] 由 ($x, $y) 位置 移动到")
+                + "(" + targetLocationInfo.colIndex + ", " + targetLocationInfo.rowIndex + ") 位置";
+            
+            chessboard.moveChessPiece(originLocationInfo.chessPiece, targetXyArray);
+
+            console.info(moveInfo);
+
+            activeElement = null;
+        });
     }
 }
 /*

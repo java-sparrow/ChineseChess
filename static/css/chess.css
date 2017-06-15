@@ -166,6 +166,7 @@
     padding: 10%;
     border-radius: 50%;
     background: #f4ebe2;
+    cursor: pointer;
 }
 /*棋子边框*/
 .chess-pieces-border {
@@ -194,6 +195,12 @@
 }
 .chess-pieces--black .chess-pieces-character {
     color: #333;
+}
+
+/*异常棋子样式*/
+/*同一个棋点若有一个以上的棋子，则多余的棋子以半透明显示*/
+.chess-pieces + .chess-pieces {
+    opacity: 0.5;
 }
 
 /*开发模式下的样式*/
