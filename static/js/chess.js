@@ -82,6 +82,15 @@ class ChessPiece {
     }
 
     /**
+     * 设置棋子的目标位置信息
+     * @param {Array} xyArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
+     */
+    setTargetLocation([x, y]) {
+        this.targetLocationX = x;
+        this.targetLocationY = y;
+    }
+
+    /**
      * 制作棋子信息字符串，用于打印输出棋子信息。
      * 字符串内支持 $side, $name, $x, $y 变量。
      * 其中，位置信息的类型 由第二个参数指定（初始化位置、当前位置、目标位置），默认使用 当前位置类型
@@ -225,11 +234,23 @@ class Chessboard {
     }
 
     /**
-     * 将指定棋子放置到棋盘上
-     * @param {ChessPiece} 需要放置的棋子对象
+     * 将棋子放置到棋盘的指定位置上（不校验位置信息）
+     * @param {ChessPiece} chessPiece 需要放置的棋子对象
+     * @param {Array} xyArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
+     */
+    putChessPieceToLocation(chessPiece, [x, y]) {
+        // 将棋子放入棋盘的指定位置
+        this.locationArray[y][x].append(chessPiece.getChessPieceElement());
+        // 更新棋子的当前位置
+        chessPiece.updateCurrentLocation([x, y]);
+    }
+
+    /**
+     * 将初始化棋子放置到棋盘上
+     * @param {ChessPiece} chessPiece 需要放置的棋子对象
      * @return {boolean} 若成功将棋子放入棋盘内，则返回 true，否则返回 false
      */
-    putChessPiece(chessPiece) {
+    putInitChessPiece(chessPiece) {
         var x = parseInt(chessPiece.initLocationX, 10);
         var y = parseInt(chessPiece.initLocationY, 10);
 
@@ -243,10 +264,7 @@ class Chessboard {
             return false;
         }
 
-        // 将棋子放入指定位置的容器中
-        this.locationArray[y][x].append(chessPiece.getChessPieceElement());
-        // 更新棋子的当前位置
-        chessPiece.updateCurrentLocation([x, y]);
+        this.putChessPieceToLocation(chessPiece, [x, y]);
 
         console.info(chessPiece.makeInfo("[$side]方棋子[$name] 成功放置至 ($x, $y) 位置"));
 
@@ -265,7 +283,7 @@ class Chessboard {
         var chessPiece = new ChessPiece(options);
 
         // 将新创建的棋子放在棋盘上
-        if (!this.putChessPiece(chessPiece)) {
+        if (!this.putInitChessPiece(chessPiece)) {
             console.warn(chessPiece.makeInfo("[$side]方棋子[$name] 放置在 ($x, $y) 位置失败", ChessPiece.LOCATION_TYPE_INIT));
         }
 
@@ -291,6 +309,17 @@ class Chessboard {
                     this.addChessPiece(options);
                 }, i * intervalMillisecond)
             });
+    }
+
+    /**
+     * 移动棋子
+     * @param {ChessPiece} chessPiece 需要移动的棋子对象
+     * @param {Array} xyArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
+     */
+    moveChessPiece(chessPiece, xyArray) {
+        chessPiece.setTargetLocation(xyArray);
+
+        this.putChessPieceToLocation(chessPiece, xyArray);
     }
 }
 /*
