@@ -212,15 +212,16 @@ class Chessboard {
         elementArrays.push(elementLastRowArray);
 
         // 将二维元素数组 转换为 棋盘位置信息二维数组（数组元素对象包括 棋点格子容器、棋点格子坐标、棋子对象 属性）
-        return elementArrays.map((elementRowArray, rowIndex) => elementRowArray.map((element, colIndex) => {
+        return elementArrays.map((elementRowArray, y) => elementRowArray.map((element, x) => {
             // 将棋点格子的坐标信息 添加到元素中
-            element.attr(Chessboard.LOCATION_X_ATTRNAME, colIndex)
-                    .attr(Chessboard.LOCATION_Y_ATTRNAME, rowIndex);
+            element.attr(Chessboard.LOCATION_X_ATTRNAME, x)
+                .attr(Chessboard.LOCATION_Y_ATTRNAME, y);
 
             return {
                 element,
-                rowIndex,
-                colIndex,
+                x,
+                y,
+                xyArray: [x, y],
                 chessPiece: null
             };
         }));
@@ -375,13 +376,12 @@ class Chessboard {
             var originLocationInfo = chessboard.getLocationInfoByElement(activeElement.parent());
             // 目标位置的 棋点位置信息对象
             var targetLocationInfo = chessboard.getLocationInfoByElement($(this));
-            var targetXyArray = [targetLocationInfo.colIndex, targetLocationInfo.rowIndex];
 
             // 棋子移动信息
             var moveInfo = originLocationInfo.chessPiece.makeInfo("[$side]方棋子[$name] 由 ($x, $y) 位置 移动到")
-                + "(" + targetLocationInfo.colIndex + ", " + targetLocationInfo.rowIndex + ") 位置";
+                + "(" + targetLocationInfo.x + ", " + targetLocationInfo.y + ") 位置";
             
-            chessboard.moveChessPiece(originLocationInfo.chessPiece, targetXyArray);
+            chessboard.moveChessPiece(originLocationInfo.chessPiece, targetLocationInfo.xyArray);
 
             console.info(moveInfo);
 
