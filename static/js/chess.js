@@ -58,6 +58,10 @@ class ChessPiece {
         // 棋子当前位置（未放入棋盘时，值为-1）
         this.currentLocationX = -1;
         this.currentLocationY = -1;
+
+        // 棋子未移动时，目标位置为-1
+        this.targetLocationX = -1;
+        this.targetLocationY = -1;
     }
 
     /**
@@ -76,6 +80,28 @@ class ChessPiece {
         this.currentLocationX = x;
         this.currentLocationY = y;
     }
+
+    /**
+     * 制作棋子信息字符串，用于打印输出棋子信息。
+     * 字符串内支持 $side, $name, $x, $y 变量。
+     * 其中，位置信息的类型 由第二个参数指定（初始化位置、当前位置、目标位置），默认使用 当前位置类型
+     * @param {String} info 信息字符串，可使用 $side, $name, $x, $y 这几个变量
+     * @param {String} locationType 位置类型，可枚举值为 ChessPiece.LOCATION_TYPE_INIT, ChessPiece.LOCATION_TYPE_CURRENT, ChessPiece.LOCATION_TYPE_TARGET
+     * @return {String} 已替换变量信息的字符串
+     */
+    makeInfo(info, locationType) {
+        var locationTypeName = ({
+            [ChessPiece.LOCATION_TYPE_INIT]: ChessPiece.LOCATION_TYPE_INIT,
+            [ChessPiece.LOCATION_TYPE_CURRENT]: ChessPiece.LOCATION_TYPE_CURRENT,
+            [ChessPiece.LOCATION_TYPE_TARGET]: ChessPiece.LOCATION_TYPE_TARGET
+        // 从Map对象中 获取对应位置类型。若没有对应位置类型，则默认使用 当前位置类型
+        })[locationType] || ChessPiece.LOCATION_TYPE_CURRENT;
+
+        return info.replace("$side", this.playSide.toString())
+            .replace("$name", this.character)
+            .replace("$x", this[locationTypeName + "LocationX"])
+            .replace("$y", this[locationTypeName + "LocationY"]);
+    }
 }
 
 /*
@@ -89,6 +115,10 @@ ChessPiece.CHARACTER_GUARDS = "仕";
 ChessPiece.CHARACTER_KING = "帅";
 ChessPiece.CHARACTER_CANNONS = "炮";
 ChessPiece.CHARACTER_SOLDIERS = "兵";
+// 位置信息 类型标识
+ChessPiece.LOCATION_TYPE_INIT = "init";
+ChessPiece.LOCATION_TYPE_CURRENT = "current";
+ChessPiece.LOCATION_TYPE_TARGET = "target";
 
 /*
  * 静态方法
@@ -218,7 +248,7 @@ class Chessboard {
         // 更新棋子的当前位置
         chessPiece.updateCurrentLocation([x, y]);
 
-        console.info("[%s]方棋子[%s] 成功放置至 (%s, %s) 位置", chessPiece.playSide.toString() , chessPiece.character, x, y);
+        console.info(chessPiece.makeInfo("[$side]方棋子[$name] 成功放置至 ($x, $y) 位置"));
 
         return true;
     }
@@ -236,7 +266,7 @@ class Chessboard {
 
         // 将新创建的棋子放在棋盘上
         if (!this.putChessPiece(chessPiece)) {
-            console.warn("[%s]方棋子[%s] 放置在 (%s, %s) 位置失败", chessPiece.playSide.toString() , chessPiece.character, chessPiece.initLocationX, chessPiece.initLocationY);
+            console.warn(chessPiece.makeInfo("[$side]方棋子[$name] 放置在 ($x, $y) 位置失败", ChessPiece.LOCATION_TYPE_INIT));
         }
 
         return chessPiece;
