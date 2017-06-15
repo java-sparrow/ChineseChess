@@ -175,6 +175,10 @@ class Chessboard {
         if (isInitChessPiece !== false) {
             this.initChessPiece();
         }
+
+        /* --- 内部缓存 --- */
+        // 棋盘上的棋子数组
+        this._chessPieceArray = [];
     }
 
     /**
@@ -283,7 +287,11 @@ class Chessboard {
         var chessPiece = new ChessPiece(options);
 
         // 将新创建的棋子放在棋盘上
-        if (!this.putInitChessPiece(chessPiece)) {
+        if (this.putInitChessPiece(chessPiece)) {
+            // 缓存 成功放置到棋盘的棋子
+            this._chessPieceArray.push(chessPiece);
+        }
+        else {
             console.warn(chessPiece.makeInfo("[$side]方棋子[$name] 放置在 ($x, $y) 位置失败", ChessPiece.LOCATION_TYPE_INIT));
         }
 
