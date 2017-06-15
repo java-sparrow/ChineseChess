@@ -62,6 +62,10 @@ class ChessPiece {
         // 棋子未移动时，目标位置为-1
         this.targetLocationX = -1;
         this.targetLocationY = -1;
+
+        // 棋子未移动时，上一个目标位置为-1
+        this.previousLocationX = -1;
+        this.previousLocationY = -1;
     }
 
     /**
@@ -73,10 +77,14 @@ class ChessPiece {
     }
 
     /**
-     * 更新棋子的当前位置信息
+     * 更新棋子的当前位置信息（会自动保存棋子的上一个位置）
      * @param {Array} xyArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
      */
     updateCurrentLocation([x, y]) {
+        // 先保存棋子的上一个位置
+        this.setPreviousLocation([this.currentLocationX, this.currentLocationY]);
+        
+        // 再更新棋子的当前位置
         this.currentLocationX = x;
         this.currentLocationY = y;
     }
@@ -91,18 +99,28 @@ class ChessPiece {
     }
 
     /**
+     * 设置棋子的上一个位置信息
+     * @param {Array} xyArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
+     */
+    setPreviousLocation([x, y]) {
+        this.previousLocationX = x;
+        this.previousLocationY = y;
+    }
+
+    /**
      * 制作棋子信息字符串，用于打印输出棋子信息。
      * 字符串内支持 $side, $name, $x, $y 变量。
      * 其中，位置信息的类型 由第二个参数指定（初始化位置、当前位置、目标位置），默认使用 当前位置类型
      * @param {String} info 信息字符串，可使用 $side, $name, $x, $y 这几个变量
-     * @param {String} locationType 位置类型，可枚举值为 ChessPiece.LOCATION_TYPE_INIT, ChessPiece.LOCATION_TYPE_CURRENT, ChessPiece.LOCATION_TYPE_TARGET
+     * @param {String} locationType 位置类型，可枚举值为 ChessPiece.LOCATION_TYPE_INIT, ChessPiece.LOCATION_TYPE_CURRENT, ChessPiece.LOCATION_TYPE_TARGET, ChessPiece.LOCATION_TYPE_PREVIOUS
      * @return {String} 已替换变量信息的字符串
      */
     makeInfo(info, locationType) {
         var locationTypeName = ({
             [ChessPiece.LOCATION_TYPE_INIT]: ChessPiece.LOCATION_TYPE_INIT,
             [ChessPiece.LOCATION_TYPE_CURRENT]: ChessPiece.LOCATION_TYPE_CURRENT,
-            [ChessPiece.LOCATION_TYPE_TARGET]: ChessPiece.LOCATION_TYPE_TARGET
+            [ChessPiece.LOCATION_TYPE_TARGET]: ChessPiece.LOCATION_TYPE_TARGET,
+            [ChessPiece.LOCATION_TYPE_PREVIOUS]: ChessPiece.LOCATION_TYPE_PREVIOUS
         // 从Map对象中 获取对应位置类型。若没有对应位置类型，则默认使用 当前位置类型
         })[locationType] || ChessPiece.LOCATION_TYPE_CURRENT;
 
@@ -128,6 +146,7 @@ ChessPiece.CHARACTER_SOLDIERS = "兵";
 ChessPiece.LOCATION_TYPE_INIT = "init";
 ChessPiece.LOCATION_TYPE_CURRENT = "current";
 ChessPiece.LOCATION_TYPE_TARGET = "target";
+ChessPiece.LOCATION_TYPE_PREVIOUS = "previous";
 
 /*
  * 静态方法
@@ -249,8 +268,11 @@ class Chessboard {
         this.locationInfoArray[y][x].chessPiece = chessPiece;
         // currentLocationX 不为负数，则需要解除旧的棋子引用。而该值为负数说明正在初始化棋盘，没有旧的棋子引用可以解除
         if (chessPiece.currentLocationX >= 0) {
+            let previousLocationX = chessPiece.currentLocationX;
+            let previousLocationY = chessPiece.currentLocationY;
+
             // 解除之前棋盘位置信息的棋子引用
-            this.locationInfoArray[chessPiece.currentLocationY][chessPiece.currentLocationX].chessPiece = null;
+            this.locationInfoArray[previousLocationY][previousLocationX].chessPiece = null;
         }
 
         // 更新棋子的当前位置
@@ -377,12 +399,11 @@ class Chessboard {
             // 目标位置的 棋点位置信息对象
             var targetLocationInfo = chessboard.getLocationInfoByElement($(this));
 
-            // 棋子移动信息
-            var moveInfo = originLocationInfo.chessPiece.makeInfo("[$side]方棋子[$name] 由 ($x, $y) 位置 移动到")
-                + "(" + targetLocationInfo.x + ", " + targetLocationInfo.y + ") 位置";
-            
             chessboard.moveChessPiece(originLocationInfo.chessPiece, targetLocationInfo.xyArray);
 
+            // 棋子移动信息
+            var moveInfo = targetLocationInfo.chessPiece.makeInfo("[$side]方棋子[$name] 由 ($x, $y) 位置 移动到", ChessPiece.LOCATION_TYPE_PREVIOUS)
+                + targetLocationInfo.chessPiece.makeInfo(" ($x, $y) 位置", ChessPiece.LOCATION_TYPE_TARGET);
             console.info(moveInfo);
 
             activeElement = null;
