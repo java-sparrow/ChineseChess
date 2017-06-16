@@ -401,6 +401,77 @@ class Chessboard {
     }
 
     /**
+     * 获取指定棋子对象的可移动范围数据
+     * @param {ChessPiece} chessPiece 需要获取移动范围的棋子对象
+     * @return {Object} 包含 moveableLocationArray 和 killableLocationArray 两个属性的对象。目前仅支持“车”类型的棋子数据，其它类型棋子会返回 null
+     */
+    getChessPieceMoveableData(chessPiece) {
+        // 先支持“车”的规则
+        if (chessPiece.character !== ChessPiece.CHARACTER_ROOKS) {
+            return null;
+        }
+
+        /**
+         * 创建可移动范围数据对象，返回值包含 可移动位置数组 及 可攻击位置数组（后者是前者的子集）
+         * @param {Array} initArray 位置初始化数组，第一个元素为横坐标值，第二个元素为纵坐标值
+         * @param {function(Array):Array} arrayHandler 位置数组 变换方法，接受一个位置数组参数，返回一个新的位置数组
+         * @param {function(Array):boolean} conditionHandler 条件处理器，接受一个位置数组参数，返回布尔值
+         * @return {Object} 包含 moveableLocationArray 和 killableLocationArray 两个属性的对象
+         */
+        var makeMoveableLocationInfo = (initArray, arrayHandler, conditionHandler) => {
+            var moveableLocationResultArray = [];
+            var killableLocationResultArray = [];
+
+            var xyArray = initArray;
+            while (conditionHandler(xyArray = arrayHandler(xyArray))) {
+                let tempChessPiece = this.getChessPiece(xyArray);
+
+                // 没有棋子说明 该位置属于可移动范围
+                if (!tempChessPiece) {
+                    moveableLocationResultArray.push(xyArray);
+                }
+                // 有棋子，则判断是己方还是对方
+                else {
+                    // 对方的棋子可以吃掉，所以该位置也是可移动范围
+                    if (tempChessPiece.playSide.toString() != chessPiece.playSide.toString()) {
+                        moveableLocationResultArray.push(xyArray);
+                        killableLocationResultArray.push(xyArray);
+                    }
+
+                    // 有棋子阻塞，结束本次循环
+                    break;
+                }
+            }
+
+            return {
+                moveableLocationArray: moveableLocationResultArray,
+                killableLocationArray: killableLocationResultArray
+            };
+        };
+
+        var moveableLocationArray = [];
+        var killableLocationArray = [];
+        var currentXY = [chessPiece.currentLocationX, chessPiece.currentLocationY];
+
+        // 根据“车”类型棋子的移动规则，创建可移动范围数组
+        [
+            makeMoveableLocationInfo(currentXY, ([x, y]) => [--x, y], ([x, y]) => (x >= 0)),
+            makeMoveableLocationInfo(currentXY, ([x, y]) => [++x, y], ([x, y]) => (x <= 8)),
+            makeMoveableLocationInfo(currentXY, ([x, y]) => [x, --y], ([x, y]) => (y >= 0)),
+            makeMoveableLocationInfo(currentXY, ([x, y]) => [x, ++y], ([x, y]) => (y <= 9))
+        // 将二维数组中的数组填充到一维数组中
+        ].forEach(moveableLocationInfo => {
+            moveableLocationArray.push(...moveableLocationInfo.moveableLocationArray);
+            killableLocationArray.push(...moveableLocationInfo.killableLocationArray);
+        });
+
+        return {
+            moveableLocationArray,
+            killableLocationArray
+        };
+    }
+
+    /**
      * 移动棋子
      * @param {ChessPiece} chessPiece 需要移动的棋子对象
      * @param {Array} xyArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
