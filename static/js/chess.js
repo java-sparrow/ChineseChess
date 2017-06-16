@@ -247,12 +247,26 @@ class Chessboard {
     }
     
     /**
+     * 获取棋盘指定位置的棋子
+     * @param {Array} xyArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
+     * @return {ChessPiece} 棋子对象。若 指定位置不在棋盘范围内 或 指定位置没有棋子，则返回 null
+     */
+    getChessPiece([x, y]) {
+        // 范围溢出则返回 null
+        if (!Chessboard.checkLocationRange([x, y])) {
+            return null;
+        }
+
+        return this.locationInfoArray[y][x].chessPiece;
+    }
+    
+    /**
      * 判断指定位置是否有棋子存在
      * @param {Array} xyArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
      * @return {boolean} 若指定位置有棋子，则返回 true，否则返回 false
      */
-    hasChessPiece([x, y]) {
-        return this.locationInfoArray[y][x].chessPiece ? true : false;
+    hasChessPiece(xyArray) {
+        return this.getChessPiece(xyArray) ? true : false;
     }
 
     /**
