@@ -108,6 +108,14 @@ class ChessPiece {
     }
 
     /**
+     * 目标位置是否有改变（与当前位置不同）
+     * @return {boolean} 若棋子的目标位置与当前位置不同，是则返回 true，否则返回 false
+     */
+    isTargetLocationChange() {
+        return !((this.targetLocationX === this.currentLocationX) && (this.targetLocationY === this.currentLocationY));
+    }
+
+    /**
      * 制作棋子信息字符串，用于打印输出棋子信息。
      * 字符串内支持 $side, $name, $x, $y 变量。
      * 其中，位置信息的类型 由第二个参数指定（初始化位置、当前位置、目标位置），默认使用 当前位置类型
@@ -367,11 +375,32 @@ class Chessboard {
      * 移动棋子
      * @param {ChessPiece} chessPiece 需要移动的棋子对象
      * @param {Array} xyArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
+     * @return {boolean} 移动棋子成功则返回 true，否则返回 false
      */
     moveChessPiece(chessPiece, xyArray) {
         chessPiece.setTargetLocation(xyArray);
 
+        // 位置没有发生变化，不处理
+        if (!chessPiece.isTargetLocationChange()) {
+            return false;
+        }
+
+        if (this.hasChessPiece(xyArray)) {
+            let existChessPiece = this.getChessPiece(xyArray);
+
+            if (existChessPiece.playSide.toString() == chessPiece.playSide.toString()) {
+                console.warn(existChessPiece.makeInfo("($x, $y) 位置有己方棋子[$name]，无法移动"));
+            }
+            else {
+                // TODO: 吃子
+            }
+
+            return false;
+        }
+
         this.putChessPieceToLocation(chessPiece, xyArray);
+
+        return true;
     }
 
     /**
@@ -398,9 +427,12 @@ class Chessboard {
 
         // 棋子元素 点击事件
         this.container.on("click", "." + CHESSPIECE_CLASSNAME, function () {
+            // 已有激活棋子时，不激活被点击的其它棋子，并让事件继续冒泡到棋点格子容器处理（可能是吃子）
+            if (activeElement) {
+                return;
+            }
+            
             activeElement = $(this);
-
-            return false;
         })
         // 棋点格子容器 点击事件
         .on("click", "." + CHESSPIECE_LOCATION_CLASSNAME, function () {
@@ -413,7 +445,10 @@ class Chessboard {
             // 目标位置的 棋点位置信息对象
             var targetLocationInfo = chessboard.getLocationInfoByElement($(this));
 
-            chessboard.moveChessPiece(originLocationInfo.chessPiece, targetLocationInfo.xyArray);
+            // 移动失败，则停止处理。允许继续选择下一个位置移动（因为没有将 activeElement 设置为 null）
+            if (!chessboard.moveChessPiece(originLocationInfo.chessPiece, targetLocationInfo.xyArray)) {
+                return;
+            }
 
             // 棋子移动信息
             var moveInfo = targetLocationInfo.chessPiece.makeInfo("[$side]方棋子[$name] 由 ($x, $y) 位置 移动到", ChessPiece.LOCATION_TYPE_PREVIOUS)
