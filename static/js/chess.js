@@ -601,6 +601,17 @@ class Chessboard {
             var originLocationInfo = chessboard.getLocationInfoByElement(activeElement.parent());
             // 目标位置的 棋点位置信息对象
             var targetLocationInfo = chessboard.getLocationInfoByElement($(this));
+            // 缓存 原位置的棋子对象
+            var originChessPiece = originLocationInfo.chessPiece;
+
+            // 当点击的不是激活棋子自身时，判断落子位置是否属于有效的移动范围（目前仅支持“车”类型的棋子）
+            if ((originLocationInfo !== targetLocationInfo) && (originChessPiece.character == ChessPiece.CHARACTER_ROOKS)) {
+                // 移动范围有效性检测。TODO: 这里偷懒直接使用样式类判断，待重构
+                if (!targetLocationInfo.element.hasClass(CHESSPIECE_LOCATION_MOVEABLE_CLASSNAME)) {
+                    console.warn(originChessPiece.makeInfo("[$side]方棋子[$name] 选择的目标位置，不在可移动的范围内"));
+                    return;
+                }
+            }
 
             // 移动失败，则停止处理。允许继续选择下一个位置移动（因为没有将 activeElement 设置为 null）
             if (!chessboard.moveChessPiece(originLocationInfo.chessPiece, targetLocationInfo.xyArray)) {
