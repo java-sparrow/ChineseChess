@@ -372,6 +372,35 @@ class Chessboard {
     }
 
     /**
+     * 从棋盘上的指定位置 移除棋子
+     * @param {Array} xyArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
+     * @return {boolean} 若成功移除棋子，则返回 true，否则返回 false（仅在位置范围溢出 或 指定位置没有棋子时，返回 false）
+     */
+    removeChessPieceFromLocation([x, y]) {
+        // 范围溢出则不处理
+        if (!Chessboard.checkLocationRange([x, y])) {
+            return false;
+        }
+
+        // 指定位置没有棋子，也不处理
+        if (!this.hasChessPiece([x, y])) {
+            return false;
+        }
+
+        // 棋盘位置信息对象
+        var locationInfo = this.locationInfoArray[y][x];
+        
+        // 将棋子从棋盘上移除
+        locationInfo.chessPiece.getChessPieceElement().remove();
+        // 解除棋子对棋盘的引用
+        locationInfo.chessPiece.chessboard = null;
+        // 解除棋盘位置信息数组 对应位置的棋子对象引用
+        locationInfo.chessPiece = null;
+
+        return true;
+    }
+
+    /**
      * 移动棋子
      * @param {ChessPiece} chessPiece 需要移动的棋子对象
      * @param {Array} xyArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
@@ -385,17 +414,19 @@ class Chessboard {
             return false;
         }
 
-        if (this.hasChessPiece(xyArray)) {
-            let existChessPiece = this.getChessPiece(xyArray);
-
-            if (existChessPiece.playSide.toString() == chessPiece.playSide.toString()) {
+        // 获取目标棋点位置的棋子（若有的话）
+        var existChessPiece = this.getChessPiece(xyArray);
+        // 目标棋点位置有己方棋子，则输出提醒信息并返回
+        if (existChessPiece && (existChessPiece.playSide.toString() == chessPiece.playSide.toString())) {
                 console.warn(existChessPiece.makeInfo("($x, $y) 位置有己方棋子[$name]，无法移动"));
-            }
-            else {
-                // TODO: 吃子
-            }
 
             return false;
+        }
+        // 若目标棋点位置有对方棋子，则吃掉对方棋子
+        else if (existChessPiece) {
+            this.removeChessPieceFromLocation(xyArray);
+            
+            console.info(chessPiece.makeInfo("原位置 ($x, $y) 的己方棋子[$name] 吃掉位于 ") + existChessPiece.makeInfo("($x, $y) 位置的对方棋子[$name]"));
         }
 
         this.putChessPieceToLocation(chessPiece, xyArray);
