@@ -150,6 +150,17 @@
     height: 100%;
     padding: 4%;
 }
+/*可移动范围颜色*/
+.chess-pieces-location--moveable {
+    background: rgba(0, 255, 0, 0.4);
+}
+.chess-pieces-location--killable {
+    background: rgba(255, 0, 0, 0.4);
+}
+.chess-pieces-location--killable .chess-pieces {
+    /*被攻击的棋子会闪烁*/
+    animation: chess-pieces--blink 0.8s linear infinite;
+}
 .chess-pieces-location--col-last {
     left: auto;
     right: -50%;
@@ -182,6 +193,10 @@
 .chess-pieces-character {
     font-size: 30px;
 }
+/*棋子文字被选中时，去掉默认的文本背景颜色*/
+.chess-pieces-character::selection {
+    background: transparent;
+}
 /*棋子红色样式*/
 .chess-pieces--red .chess-pieces-border {
     border: 1px solid #f20d2b;
@@ -195,6 +210,15 @@
 }
 .chess-pieces--black .chess-pieces-character {
     color: #333;
+}
+
+/*辅助动画*/
+/*棋子闪烁效果，代码参考 http://www.gbtags.com/gb/rtreplayerpreview/38.htm */
+@keyframes chess-pieces--blink{
+    0% { opacity: 1; }
+    50% { opacity: 1; }
+    50.01% { opacity: 0.8; }
+    100% { opacity: 0.8; }
 }
 
 /*异常棋子样式*/

@@ -3,6 +3,8 @@ const CHESSBOARD_CONTAINER_CLASSNAME = "chessboard-container";
 const CHESSBOARD_ROW_CLASSNAME = "chessboard-row";
 const CHESSPIECE_LOCATION_CLASSNAME = "chess-pieces-location";
 const CHESSPIECE_LOCATION_LASTROW_CLASSNAME = "chess-pieces-location--row-last";
+const CHESSPIECE_LOCATION_MOVEABLE_CLASSNAME = "chess-pieces-location--moveable";
+const CHESSPIECE_LOCATION_KILLABLE_CLASSNAME = "chess-pieces-location--killable";
 const CHESSPIECE_CLASSNAME = "chess-pieces";
 
 // 对弈方属性
@@ -489,7 +491,7 @@ class Chessboard {
         var existChessPiece = this.getChessPiece(xyArray);
         // 目标棋点位置有己方棋子，则输出提醒信息并返回
         if (existChessPiece && (existChessPiece.playSide.toString() == chessPiece.playSide.toString())) {
-                console.warn(existChessPiece.makeInfo("($x, $y) 位置有己方棋子[$name]，无法移动"));
+            console.warn(existChessPiece.makeInfo("($x, $y) 位置有己方棋子[$name]，无法移动"));
 
             return false;
         }
@@ -518,6 +520,40 @@ class Chessboard {
     }
 
     /**
+     * 根据位置数组中的 指定位置信息 添加 指定样式类名
+     * @param {Array} locationArray 存放位置数组的数组，数组的每一个元素，都是一个 xyArray 类型的数组
+     * @param {String} className 样式类名，如果有多个样式类名需要添加，可以以空格隔开的形式组成字符串
+     */
+    addClassNameToLocationElement(locationArray = [], className) {
+        locationArray.forEach(([x, y]) => {
+            this.locationInfoArray[y][x].element.addClass(className);
+        });
+    }
+
+    /**
+     * 清除棋盘上的状态样式类名（除了内置的样式类名清除列表，还可以附加额外的样式类名列表）
+     * @param {Array<String>} classNameArray 额外的样式类名数组
+     */
+    clearStatusClassName(classNameArray = []) {
+        // 需要删除的类名列表
+        var clearClassNameArray = [
+            // 默认需要清除的状态类名
+            CHESSPIECE_LOCATION_MOVEABLE_CLASSNAME,
+            CHESSPIECE_LOCATION_KILLABLE_CLASSNAME
+        // 合并 参数指定的额外类名列表
+        ].concat(classNameArray);
+        // jQuery 支持空格隔开的多个 className 操作
+        var clearClassNames = clearClassNameArray.join(" ");
+
+        // 遍历二维数组并删除 状态类名列表中的全部类名
+        this.locationInfoArray.forEach((locationInfoRowArray, y) => {
+            locationInfoRowArray.forEach((locationInfo, x) => {
+                locationInfo.element.removeClass(clearClassNames);
+            });
+        });
+    }
+
+    /**
      * 绑定事件
      */
     bindEvent() {
@@ -535,6 +571,14 @@ class Chessboard {
             }
             
             activeElement = $(this);
+
+            var locationInfo = chessboard.getLocationInfoByElement(activeElement.parent());
+            var moveableData = chessboard.getChessPieceMoveableData(locationInfo.chessPiece);
+            // 如果有移动范围数据，则添加对应的样式类名
+            if (moveableData) {
+                chessboard.addClassNameToLocationElement(moveableData.moveableLocationArray, CHESSPIECE_LOCATION_MOVEABLE_CLASSNAME);
+                chessboard.addClassNameToLocationElement(moveableData.killableLocationArray, CHESSPIECE_LOCATION_KILLABLE_CLASSNAME);
+            }
         })
         // 棋点格子容器 点击事件
         .on("click", "." + CHESSPIECE_LOCATION_CLASSNAME, function () {
@@ -558,6 +602,8 @@ class Chessboard {
             console.info(moveInfo);
 
             activeElement = null;
+            // 落子之后，清除状态指示样式类名
+            chessboard.clearStatusClassName();
         });
     }
 }
