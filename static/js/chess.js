@@ -567,6 +567,17 @@ class Chessboard {
         this.container.on("click", "." + CHESSPIECE_CLASSNAME, function () {
             // 已有激活棋子时，不激活被点击的其它棋子，并让事件继续冒泡到棋点格子容器处理（可能是吃子）
             if (activeElement) {
+                // 棋子激活时，再次点击自身 可以取消 自身的激活状态
+                if (activeElement[0] === this) {
+                    activeElement = null;
+                    // 取消自身的激活状态之后，清除状态指示样式类名
+                    chessboard.clearStatusClassName();
+
+                    console.info(chessboard.getLocationInfoByElement($(this).parent()).chessPiece.makeInfo(
+                        "[$side]方棋子[$name] ($x, $y) 取消激活"
+                    ));
+                }
+                
                 return;
             }
             
