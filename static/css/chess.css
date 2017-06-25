@@ -211,6 +211,11 @@
 .chess-pieces--black .chess-pieces-character {
     color: #333;
 }
+/*棋子激活时的样式*/
+.chess-pieces--active {
+    /*激活的棋子会闪烁*/
+    animation: animation-chess-pieces--shine 1.8s linear infinite;
+}
 
 /*辅助动画*/
 /*棋子闪烁效果，代码参考 http://www.gbtags.com/gb/rtreplayerpreview/38.htm */
@@ -219,6 +224,18 @@
     50% { opacity: 1; }
     50.01% { opacity: 0.8; }
     100% { opacity: 0.8; }
+}
+/*棋子发光效果*/
+@keyframes animation-chess-pieces--shine {
+    0% {
+        box-shadow: 0 0 6px 4px #fff57d;
+    }
+    50% {
+        box-shadow: 0 0 3px 1px #f99854;
+    }
+    100% {
+        box-shadow: 0 0 6px 4px #fff57d;
+    }
 }
 
 /*异常棋子样式*/

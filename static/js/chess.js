@@ -6,6 +6,7 @@ const CHESSPIECE_LOCATION_LASTROW_CLASSNAME = "chess-pieces-location--row-last";
 const CHESSPIECE_LOCATION_MOVEABLE_CLASSNAME = "chess-pieces-location--moveable";
 const CHESSPIECE_LOCATION_KILLABLE_CLASSNAME = "chess-pieces-location--killable";
 const CHESSPIECE_CLASSNAME = "chess-pieces";
+const CHESSPIECE_ACTIVE_CLASSNAME = "chess-pieces--active";
 
 // 对弈方属性
 const PLAY_SIDE_FIRST = {
@@ -569,6 +570,9 @@ class Chessboard {
             if (activeElement) {
                 // 棋子激活时，再次点击自身 可以取消 自身的激活状态
                 if (activeElement[0] === this) {
+                    // 去掉激活样式类
+                    activeElement.removeClass(CHESSPIECE_ACTIVE_CLASSNAME);
+
                     activeElement = null;
                     // 取消自身的激活状态之后，清除状态指示样式类名
                     chessboard.clearStatusClassName();
@@ -582,6 +586,8 @@ class Chessboard {
             }
             
             activeElement = $(this);
+            // 添加激活样式类
+            activeElement.addClass(CHESSPIECE_ACTIVE_CLASSNAME);
 
             var locationInfo = chessboard.getLocationInfoByElement(activeElement.parent());
             var moveableData = chessboard.getChessPieceMoveableData(locationInfo.chessPiece);
@@ -623,6 +629,9 @@ class Chessboard {
                 + targetLocationInfo.chessPiece.makeInfo(" ($x, $y) 位置", ChessPiece.LOCATION_TYPE_TARGET);
             console.info(moveInfo);
 
+            // 去掉激活样式类
+            activeElement.removeClass(CHESSPIECE_ACTIVE_CLASSNAME);
+            
             activeElement = null;
             // 落子之后，清除状态指示样式类名
             chessboard.clearStatusClassName();
