@@ -140,6 +140,15 @@ class ChessPiece {
             .replace("$x", this[locationTypeName + "LocationX"])
             .replace("$y", this[locationTypeName + "LocationY"]);
     }
+
+    /**
+     * 比较棋子名称是否相等（与阵营无关，如“象”等于“相”）
+     * @param {String} character 要比较的棋子名称
+     * @return {boolean} 如果棋子名称相同（与阵营无关，如“象”等于“相”），则返回 true，否则返回 false
+     */
+    equalCharacter(character) {
+        return (this.character === character) || (this.character === ChessPiece.getSecondCharacter(character));
+    }
 }
 
 /*
@@ -453,11 +462,11 @@ class Chessboard {
     /**
      * 获取指定棋子对象的可移动范围数据
      * @param {ChessPiece} chessPiece 需要获取移动范围的棋子对象
-     * @return {Object} 包含 moveableLocationArray 和 killableLocationArray 两个属性的对象。目前仅支持“车”类型的棋子数据，其它类型棋子会返回 null
+     * @return {Object} 包含 moveableLocationArray 和 killableLocationArray 两个属性的对象。目前仅支持“车”和“象”类型的棋子数据，其它类型棋子会返回 null
      */
     getChessPieceMoveableData(chessPiece) {
-        // 先支持“车”的规则
-        if (chessPiece.character !== ChessPiece.CHARACTER_ROOKS) {
+        // 先支持“车”和“象”的规则
+        if (!chessPiece.equalCharacter(ChessPiece.CHARACTER_ROOKS) && !chessPiece.equalCharacter(ChessPiece.CHARACTER_ELEPHANTS)) {
             return null;
         }
 
@@ -573,12 +582,39 @@ class Chessboard {
             };
         };
 
+        // isTargetLocationInTerritoryArea 的快捷方式
+        var isYInTerritoryArea = (
+            y => this.isTargetLocationInTerritoryArea(chessPiece, y)
+        );
+        // isYInTerritoryArea 的快捷方式
+        var isXYInTerritoryArea = (
+            ([x, y]) => isYInTerritoryArea(y)
+        );
+
+        /**
+         * 过滤位置数组，用于最后的范围限定，如 象不能过河、兵不能后退、将士不能出九宫
+         * @param {Object} moveableLocationInfo 包含 moveableLocationArray 和 killableLocationArray 两个属性的对象
+         * @param {function(Array):boolean} filterHandler 过滤逻辑
+         * @return {Object} 包含 moveableLocationArray 和 killableLocationArray 两个属性的（应用 过滤逻辑 处理后）对象
+         */
+        var filterLocationArray = ({moveableLocationArray, killableLocationArray}, filterHandler) => ({
+            moveableLocationArray: moveableLocationArray.filter(filterHandler),
+            killableLocationArray: killableLocationArray.filter(filterHandler)
+        });
+
         var moveableLocationInfo = null;
         var currentXY = [chessPiece.currentLocationX, chessPiece.currentLocationY];
 
         // 棋子“车”的可移动范围数据
-        if (chessPiece.character === ChessPiece.CHARACTER_ROOKS) {
+        if (chessPiece.equalCharacter(ChessPiece.CHARACTER_ROOKS)) {
             moveableLocationInfo = makeMoveableLocationInfo(currentXY, 1, 0);
+        }
+        // 棋子“象”的可移动范围数据
+        else if (chessPiece.equalCharacter(ChessPiece.CHARACTER_ELEPHANTS)) {
+            moveableLocationInfo = makeMoveableLocationInfo(currentXY, 2, 2, true);
+            // 过滤逻辑：象不能过河
+            moveableLocationInfo = filterLocationArray(moveableLocationInfo, isXYInTerritoryArea);
+            // TODO: 添加过滤逻辑：“堵象眼”
         }
 
         return moveableLocationInfo;
@@ -720,8 +756,8 @@ class Chessboard {
             // 缓存 原位置的棋子对象
             var originChessPiece = originLocationInfo.chessPiece;
 
-            // 当点击的不是激活棋子自身时，判断落子位置是否属于有效的移动范围（目前仅支持“车”类型的棋子）
-            if ((originLocationInfo !== targetLocationInfo) && (originChessPiece.character == ChessPiece.CHARACTER_ROOKS)) {
+            // 当点击的不是激活棋子自身时，判断落子位置是否属于有效的移动范围（目前仅支持“车”和“象”类型的棋子）
+            if ((originLocationInfo !== targetLocationInfo) && (originChessPiece.equalCharacter(ChessPiece.CHARACTER_ROOKS) || originChessPiece.equalCharacter(ChessPiece.CHARACTER_ELEPHANTS))) {
                 // 移动范围有效性检测。TODO: 这里偷懒直接使用样式类判断，待重构
                 if (!targetLocationInfo.element.hasClass(CHESSPIECE_LOCATION_MOVEABLE_CLASSNAME)) {
                     console.warn(originChessPiece.makeInfo("[$side]方棋子[$name] 选择的目标位置，不在可移动的范围内"));
