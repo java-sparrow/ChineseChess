@@ -462,11 +462,11 @@ class Chessboard {
     /**
      * 获取指定棋子对象的可移动范围数据
      * @param {ChessPiece} chessPiece 需要获取移动范围的棋子对象
-     * @return {Object} 包含 moveableLocationArray 和 killableLocationArray 两个属性的对象。目前仅支持“车”和“象”类型的棋子数据，其它类型棋子会返回 null
+     * @return {Object} 包含 moveableLocationArray 和 killableLocationArray 两个属性的对象。目前仅支持“车”、“象”、“马”类型的棋子数据，其它类型棋子会返回 null
      */
     getChessPieceMoveableData(chessPiece) {
-        // 先支持“车”和“象”的规则
-        if (!chessPiece.equalCharacter(ChessPiece.CHARACTER_ROOKS) && !chessPiece.equalCharacter(ChessPiece.CHARACTER_ELEPHANTS)) {
+        // 先支持“车”、“象”、“马”的规则
+        if (!chessPiece.equalCharacter(ChessPiece.CHARACTER_ROOKS) && !chessPiece.equalCharacter(ChessPiece.CHARACTER_ELEPHANTS) && !chessPiece.equalCharacter(ChessPiece.CHARACTER_KNIGHTS)) {
             return null;
         }
 
@@ -616,6 +616,11 @@ class Chessboard {
             moveableLocationInfo = filterLocationArray(moveableLocationInfo, isXYInTerritoryArea);
             // TODO: 添加过滤逻辑：“堵象眼”
         }
+        // 棋子“马”的可移动范围数据
+        else if (chessPiece.equalCharacter(ChessPiece.CHARACTER_KNIGHTS)) {
+            moveableLocationInfo = makeMoveableLocationInfo(currentXY, 1, 2, true);
+            // TODO: 添加过滤逻辑：“憋马脚”
+        }
 
         return moveableLocationInfo;
     }
@@ -756,8 +761,8 @@ class Chessboard {
             // 缓存 原位置的棋子对象
             var originChessPiece = originLocationInfo.chessPiece;
 
-            // 当点击的不是激活棋子自身时，判断落子位置是否属于有效的移动范围（目前仅支持“车”和“象”类型的棋子）
-            if ((originLocationInfo !== targetLocationInfo) && (originChessPiece.equalCharacter(ChessPiece.CHARACTER_ROOKS) || originChessPiece.equalCharacter(ChessPiece.CHARACTER_ELEPHANTS))) {
+            // 当点击的不是激活棋子自身时，判断落子位置是否属于有效的移动范围（目前仅支持“车”、“象”、“马”类型的棋子）
+            if ((originLocationInfo !== targetLocationInfo) && (originChessPiece.equalCharacter(ChessPiece.CHARACTER_ROOKS) || originChessPiece.equalCharacter(ChessPiece.CHARACTER_ELEPHANTS)  || originChessPiece.equalCharacter(ChessPiece.CHARACTER_KNIGHTS))) {
                 // 移动范围有效性检测。TODO: 这里偷懒直接使用样式类判断，待重构
                 if (!targetLocationInfo.element.hasClass(CHESSPIECE_LOCATION_MOVEABLE_CLASSNAME)) {
                     console.warn(originChessPiece.makeInfo("[$side]方棋子[$name] 选择的目标位置，不在可移动的范围内"));
