@@ -404,6 +404,53 @@ class Chessboard {
     }
 
     /**
+     * 根据纵坐标值（通常是棋子的初始化纵坐标值）获取己方领地纵坐标值范围
+     * @param {number} y 纵坐标值
+     * @return {Object} 一个包含 min 和 max 属性的对象。若参数y值不在棋盘范围内，则 min 和 max 的值均为 -1
+     */
+    getTerritoryAreaByLocation(y) {
+        var minY = -1;
+        var maxY = -1;
+
+        if (y >= 0 && y <= 4) {
+            minY = 0;
+            maxY = 4;
+        }
+        else if (y >= 5 && y <= 9) {
+            minY = 5;
+            maxY = 9;
+        }
+
+        return {
+            min: minY,
+            max: maxY
+        };
+    }
+
+    /**
+     * 获取指定棋子的领地纵坐标值范围
+     * @param {ChessPiece} chessPiece 需要获取领地纵坐标值范围 的棋子对象
+     * @return {Object} 一个包含 min 和 max 属性的对象。若参数y值不在棋盘范围内，则 min 和 max 的值均为 -1
+     */
+    getTerritoryAreaByChessPiece(chessPiece) {
+        return this.getTerritoryAreaByLocation(chessPiece.initLocationY);
+    }
+
+    /**
+     * 判断目标位置（仅需要纵坐标值）是否在己方领地（未过河）
+     * @param {ChessPiece} chessPiece 用于判断领地范围的棋子对象
+     * @param {number} y 纵坐标值
+     * @return {boolean} 目标位置的纵坐标值在己方领地则返回 true，否则返回 false
+     */
+    isTargetLocationInTerritoryArea(chessPiece, y) {
+        y = y || chessPiece.targetLocationY;
+
+        var rangeObject = this.getTerritoryAreaByChessPiece(chessPiece);
+
+        return ((y >= rangeObject.min) && (y <= rangeObject.max));
+    }
+
+    /**
      * 获取指定棋子对象的可移动范围数据
      * @param {ChessPiece} chessPiece 需要获取移动范围的棋子对象
      * @return {Object} 包含 moveableLocationArray 和 killableLocationArray 两个属性的对象。目前仅支持“车”类型的棋子数据，其它类型棋子会返回 null
@@ -669,6 +716,15 @@ Chessboard.checkLocationRange = ([x, y]) => {
 
     return true;
 };
+
+/**
+ * 判断坐标位置是否在棋盘上，等同于 Chessboard.checkLocationRange ，但不打印提示信息
+ * @param {Array} xyArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
+ * @return {boolean} 位置范围在棋盘坐标内，则返回 true，否则返回 false
+ */
+Chessboard.isLocationInChessboard = ([x, y]) => (
+    (x >= 0) && (x <= 8) && (y >= 0) && (y <= 9)
+);
 
 /**
  * 获取 双方棋子初始化配置数组
