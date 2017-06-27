@@ -462,34 +462,108 @@ class Chessboard {
         }
 
         /**
+         * 获取指定位置的信息：是否有棋子、有己方棋子、有对方棋子
+         * @param {Array} xyArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
+         * @return {Object} 位置信息，包含 isEmpty、hasOtherSideChessPiece、hasOwnSideChessPiece 三个属性的对象
+         */
+        var getLocationInfo = (xyArray) => {
+            var tempChessPiece = this.getChessPiece(xyArray);
+
+            var isEmpty = false;
+            var hasOtherSideChessPiece = false;
+            var hasOwnSideChessPiece = false;
+
+            // 没有棋子说明 该位置属于空位
+            if (!tempChessPiece) {
+                isEmpty = true;
+            }
+            // 有棋子，则判断是己方还是对方
+            else {
+                // 该位置有对方棋子
+                if (tempChessPiece.playSide.toString() != chessPiece.playSide.toString()) {
+                    hasOtherSideChessPiece = true;
+                }
+                // 该位置有己方棋子
+                else {
+                    hasOwnSideChessPiece = true;
+                }
+            }
+
+            return {
+                isEmpty,
+                hasOtherSideChessPiece,
+                hasOwnSideChessPiece
+            };
+        };
+
+        /**
          * 创建可移动范围数据对象，返回值包含 可移动位置数组 及 可攻击位置数组（后者是前者的子集）
-         * @param {Array} initArray 位置初始化数组，第一个元素为横坐标值，第二个元素为纵坐标值
-         * @param {function(Array):Array} arrayHandler 位置数组 变换方法，接受一个位置数组参数，返回一个新的位置数组
-         * @param {function(Array):boolean} conditionHandler 条件处理器，接受一个位置数组参数，返回布尔值
+         * @param {Array} xyArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
+         * @param {number} n 第一种增量，将作用于x或y。建议该值为非0。
+         * @param {number} m 第二种增量，将作用于x或y
+         * @param {boolean} isIncreaseOnce 是否仅对 x、y 坐标增长一次（只有“车”、“炮”在同一方向上可以有多个坐标变换，其它棋子在一个方向上只能有一次坐标变换）
          * @return {Object} 包含 moveableLocationArray 和 killableLocationArray 两个属性的对象
          */
-        var makeMoveableLocationInfo = (initArray, arrayHandler, conditionHandler) => {
+        var makeMoveableLocationInfo = ([x, y], n, m, isIncreaseOnce) => {
             var moveableLocationResultArray = [];
             var killableLocationResultArray = [];
 
-            var xyArray = initArray;
-            while (conditionHandler(xyArray = arrayHandler(xyArray))) {
-                let tempChessPiece = this.getChessPiece(xyArray);
+            // 根据 x、y 的增量，生成一个新的位置数组
+            var createLocationArrayByIncrement = (xIncrement, yIncrement) => {
+                let tempX = x;
+                let tempY = y;
 
-                // 没有棋子说明 该位置属于可移动范围
-                if (!tempChessPiece) {
-                    moveableLocationResultArray.push(xyArray);
-                }
-                // 有棋子，则判断是己方还是对方
-                else {
-                    // 对方的棋子可以吃掉，所以该位置也是可移动范围
-                    if (tempChessPiece.playSide.toString() != chessPiece.playSide.toString()) {
-                        moveableLocationResultArray.push(xyArray);
-                        killableLocationResultArray.push(xyArray);
+                while (true) {
+                    tempX += xIncrement;
+                    tempY += yIncrement;
+
+                    let xyArray = [tempX, tempY];
+
+                    // 若目标位置超出棋盘范围，则结束循环
+                    if (!Chessboard.isLocationInChessboard(xyArray)) {
+                        break;
                     }
 
-                    // 有棋子阻塞，结束本次循环
-                    break;
+                    let locationInfo = getLocationInfo(xyArray);
+
+                    // 没有棋子说明 该位置属于可移动范围
+                    if (locationInfo.isEmpty) {
+                        moveableLocationResultArray.push(xyArray);
+                    }
+                    // 有棋子，则判断是己方还是对方
+                    else {
+                        // 如果是对方棋子，可以操作
+                        if (locationInfo.hasOtherSideChessPiece) {
+                            killableLocationResultArray.push(xyArray);
+                            // 对方的棋子可以吃掉，所以该位置也是可移动范围
+                            moveableLocationResultArray.push(xyArray);
+                        }
+
+                        // 有（对方或己方）棋子阻塞，则结束循环
+                        break;
+                    }
+
+                    // 如果仅需增长一次，则不进入下次循环
+                    if (isIncreaseOnce) {
+                        break;
+                    }
+                }
+            };
+
+            // 下面假设 n 不为 0，若 m 有值为 0，则通过判断去掉重复的操作
+            createLocationArrayByIncrement(n, m);
+            createLocationArrayByIncrement(-n, m);
+            if (m !== 0) {
+                createLocationArrayByIncrement(n, -m);
+                createLocationArrayByIncrement(-n, -m);
+            }
+            // 当 n、m 值不相等时，需要交换增量位置继续操作
+            if (m !== n) {
+                createLocationArrayByIncrement(m, n);
+                createLocationArrayByIncrement(m, -n);
+                if (m !== 0) {
+                    createLocationArrayByIncrement(-m, n);
+                    createLocationArrayByIncrement(-m, -n);
                 }
             }
 
@@ -499,26 +573,15 @@ class Chessboard {
             };
         };
 
-        var moveableLocationArray = [];
-        var killableLocationArray = [];
+        var moveableLocationInfo = null;
         var currentXY = [chessPiece.currentLocationX, chessPiece.currentLocationY];
 
-        // 根据“车”类型棋子的移动规则，创建可移动范围数组
-        [
-            makeMoveableLocationInfo(currentXY, ([x, y]) => [--x, y], ([x, y]) => (x >= 0)),
-            makeMoveableLocationInfo(currentXY, ([x, y]) => [++x, y], ([x, y]) => (x <= 8)),
-            makeMoveableLocationInfo(currentXY, ([x, y]) => [x, --y], ([x, y]) => (y >= 0)),
-            makeMoveableLocationInfo(currentXY, ([x, y]) => [x, ++y], ([x, y]) => (y <= 9))
-        // 将二维数组中的数组填充到一维数组中
-        ].forEach(moveableLocationInfo => {
-            moveableLocationArray.push(...moveableLocationInfo.moveableLocationArray);
-            killableLocationArray.push(...moveableLocationInfo.killableLocationArray);
-        });
+        // 棋子“车”的可移动范围数据
+        if (chessPiece.character === ChessPiece.CHARACTER_ROOKS) {
+            moveableLocationInfo = makeMoveableLocationInfo(currentXY, 1, 0);
+        }
 
-        return {
-            moveableLocationArray,
-            killableLocationArray
-        };
+        return moveableLocationInfo;
     }
 
     /**
