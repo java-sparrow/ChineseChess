@@ -704,7 +704,21 @@ class Chessboard {
         // 棋子“马”的可移动范围数据
         else if (chessPiece.equalCharacter(ChessPiece.CHARACTER_KNIGHTS)) {
             moveableLocationInfo = makeMoveableLocationInfo(currentXY, 1, 2, true);
-            // TODO: 添加过滤逻辑：“憋马脚”
+            // 过滤逻辑：“绊马脚”
+            moveableLocationInfo = filterLocationArray(moveableLocationInfo, ([x, y]) => {
+                var horseFootLocation = [-1, -1];
+
+                // “马脚”位置为 棋子坐标增量为 2 的方向上，与棋子相邻的位置（即其中一个方向坐标 取同方向当前位置和目标位置的平均值，另一个方向坐标 与同方向当前位置相同）
+                if (Math.abs(currentLocationX - x) == 2) {
+                    horseFootLocation = [(currentLocationX + x) / 2, currentLocationY];
+                }
+                else if (Math.abs(currentLocationY - y) == 2) {
+                    horseFootLocation = [currentLocationX, (currentLocationY + y) / 2];
+                }
+                
+                // 如果“马脚”位置没有棋子，则目标位置可以移动
+                return getLocationInfo(horseFootLocation).isEmpty;
+            });
         }
         // 棋子“将”的可移动范围数据
         else if (chessPiece.equalCharacter(ChessPiece.CHARACTER_KING)) {
