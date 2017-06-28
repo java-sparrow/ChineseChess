@@ -585,6 +585,15 @@ class Chessboard {
         var isXYInTerritoryArea = (
             ([x, y]) => isYInTerritoryArea(y)
         );
+        // 判断 指定位置信息 是否在九宫范围内（九宫范围与棋子所处领地有关）
+        var isInNineGridArea = (() => {
+            // 因为同一棋子的 nineGridArea 是相同的，所以使用闭包缓存 nineGridArea 变量
+            var nineGridArea = Chessboard.getNineGridArea(chessPiece.initLocationY);
+
+            return ([x, y]) => (
+                (x >= nineGridArea.minX) && (x <= nineGridArea.maxX) && (y >= nineGridArea.minY) && (y <= nineGridArea.maxY)
+            );
+        })();
 
         /**
          * 创建 “炮”的可移动范围数据对象，返回值包含 可移动位置数组 及 可攻击位置数组（后者是前者的子集）
@@ -691,12 +700,14 @@ class Chessboard {
         // 棋子“将”的可移动范围数据
         else if (chessPiece.equalCharacter(ChessPiece.CHARACTER_KING)) {
             moveableLocationInfo = makeMoveableLocationInfo(currentXY, 1, 0, true);
-            // TODO: 添加过滤逻辑：“不能超出九宫”
+            // 过滤逻辑：移动范围不能超出九宫
+            moveableLocationInfo = filterLocationArray(moveableLocationInfo, isInNineGridArea);
         }
         // 棋子“士”的可移动范围数据
         else if (chessPiece.equalCharacter(ChessPiece.CHARACTER_GUARDS)) {
             moveableLocationInfo = makeMoveableLocationInfo(currentXY, 1, 1, true);
-            // TODO: 添加过滤逻辑：“不能超出九宫”
+            // 过滤逻辑：移动范围不能超出九宫
+            moveableLocationInfo = filterLocationArray(moveableLocationInfo, isInNineGridArea);
         }
         // 棋子“炮”的可移动范围数据
         else if (chessPiece.equalCharacter(ChessPiece.CHARACTER_CANNONS)) {
@@ -914,6 +925,34 @@ Chessboard.checkLocationRange = ([x, y]) => {
 Chessboard.isLocationInChessboard = ([x, y]) => (
     (x >= 0) && (x <= 8) && (y >= 0) && (y <= 9)
 );
+
+/**
+ * 根据 棋子初始化位置的纵坐标值，获取九宫范围
+ * @param {number} initLocationY 棋子初始化位置的纵坐标值
+ * @return {Object} 包含 minX、maxX、minY、maxY 属性的对象
+ */
+Chessboard.getNineGridArea = initLocationY => {
+    var minY = -1;
+    var maxY = -1;
+
+    // 根据棋子初始化位置的纵坐标值，计算九宫纵坐标值范围
+    if ((initLocationY >= 0) && (initLocationY <= 4)) {
+        minY = 0;
+        maxY = 2;
+    }
+    else if ((initLocationY >= 5) && (initLocationY <= 9)) {
+        minY = 7;
+        maxY = 9;
+    }
+
+    return {
+        // 横坐标为固定范围，不需要额外计算
+        minX: 3,
+        maxX: 5,
+        minY,
+        maxY
+    }
+};
 
 /**
  * 获取 双方棋子初始化配置数组
