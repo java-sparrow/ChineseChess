@@ -679,7 +679,9 @@ class Chessboard {
         });
 
         var moveableLocationInfo = null;
-        var currentXY = [chessPiece.currentLocationX, chessPiece.currentLocationY];
+        var currentLocationX = chessPiece.currentLocationX;
+        var currentLocationY = chessPiece.currentLocationY;
+        var currentXY = [currentLocationX, currentLocationY];
 
         // 棋子“车”的可移动范围数据
         if (chessPiece.equalCharacter(ChessPiece.CHARACTER_ROOKS)) {
@@ -690,7 +692,14 @@ class Chessboard {
             moveableLocationInfo = makeMoveableLocationInfo(currentXY, 2, 2, true);
             // 过滤逻辑：象不能过河
             moveableLocationInfo = filterLocationArray(moveableLocationInfo, isXYInTerritoryArea);
-            // TODO: 添加过滤逻辑：“堵象眼”
+            // 过滤逻辑：“堵象眼”
+            moveableLocationInfo = filterLocationArray(moveableLocationInfo, ([x, y]) => {
+                // “象眼”位置为 棋子当前坐标与目标坐标 的中间位置，所以分别计算 水平和垂直坐标 的平均值即可得到
+                var elephantEyeLocation = [(currentLocationX + x) / 2, (currentLocationY + y) / 2];
+                
+                // 如果“象眼”位置没有棋子，则目标位置可以移动
+                return getLocationInfo(elephantEyeLocation).isEmpty;
+            });
         }
         // 棋子“马”的可移动范围数据
         else if (chessPiece.equalCharacter(ChessPiece.CHARACTER_KNIGHTS)) {
