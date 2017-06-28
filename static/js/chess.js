@@ -587,6 +587,78 @@ class Chessboard {
         );
 
         /**
+         * 创建 “炮”的可移动范围数据对象，返回值包含 可移动位置数组 及 可攻击位置数组（后者是前者的子集）
+         *  TODO: 抽象 createLocationArrayByIncrement 方法，使之与 makeMoveableLocationInfo 的内部方法能合并重用
+         * @param {Array} xyArray 位置数组，第一个元素为横坐标值，第二个元素为纵坐标值
+         * @return {Object} 包含 moveableLocationArray 和 killableLocationArray 两个属性的对象
+         */
+        var makeCannonsMoveableLocationInfo = ([x, y]) => {
+            var moveableLocationResultArray = [];
+            var killableLocationResultArray = [];
+
+            // 根据 x、y 的增量，生成一个新的位置数组
+            var createLocationArrayByIncrement = (xIncrement, yIncrement) => {
+                var tempX = x;
+                var tempY = y;
+                // “隔子”标志：是否有棋子在中间（炮吃子需要间隔一个棋子）
+                var hasChessPieceInMiddleFlag = false;
+
+                while (true) {
+                    tempX += xIncrement;
+                    tempY += yIncrement;
+
+                    let xyArray = [tempX, tempY];
+
+                    // 若目标位置超出棋盘范围，则结束循环
+                    if (!Chessboard.isLocationInChessboard(xyArray)) {
+                        break;
+                    }
+
+                    let locationInfo = getLocationInfo(xyArray);
+
+                    // 没有棋子在中间的话，添加可移动范围
+                    if (!hasChessPieceInMiddleFlag) {
+                        // 没有棋子说明 该位置属于可移动范围
+                        if (locationInfo.isEmpty) {
+                            moveableLocationResultArray.push(xyArray);
+                        }
+                        // 有棋子间隔，则设置“隔子”标志
+                        else {
+                            hasChessPieceInMiddleFlag = true;
+                        }
+                    }
+                    // 有棋子在中间的话，添加攻击范围
+                    else {
+                        // 如果是对方棋子，可以操作
+                        if (locationInfo.hasOtherSideChessPiece) {
+                            killableLocationResultArray.push(xyArray);
+                            // 对方的棋子可以吃掉，所以该位置也是可移动范围
+                            moveableLocationResultArray.push(xyArray);
+
+                            break;
+                        }
+                        // 如果隔着棋子遇到己方棋子，则应该结束本次“位置探索”（结束循环）
+                        else if (locationInfo.hasOwnSideChessPiece) {
+                            break;
+                        }
+                        // else 如果没有棋子，也不能移动。因为炮可以隔着棋子吃子，但不能隔着棋子移动
+                    }
+                }
+            };
+
+            // 炮是水平或垂直移动
+            createLocationArrayByIncrement(1, 0);
+            createLocationArrayByIncrement(-1, 0);
+            createLocationArrayByIncrement(0, 1);
+            createLocationArrayByIncrement(0, -1);
+
+            return {
+                moveableLocationArray: moveableLocationResultArray,
+                killableLocationArray: killableLocationResultArray
+            };
+        };
+
+        /**
          * 过滤位置数组，用于最后的范围限定，如 象不能过河、兵不能后退、将士不能出九宫
          * @param {Object} moveableLocationInfo 包含 moveableLocationArray 和 killableLocationArray 两个属性的对象
          * @param {function(Array):boolean} filterHandler 过滤逻辑
@@ -628,21 +700,7 @@ class Chessboard {
         }
         // 棋子“炮”的可移动范围数据
         else if (chessPiece.equalCharacter(ChessPiece.CHARACTER_CANNONS)) {
-            let {moveableLocationArray, killableLocationArray} = makeMoveableLocationInfo(currentXY, 1, 0);
-            let cannonsMoveableLocationArray = [];
-
-            // 将没有棋子的位置 放入新的可移动范围数组中
-            moveableLocationArray.forEach(xyArray => {
-                if (getLocationInfo(xyArray).isEmpty) {
-                    cannonsMoveableLocationArray.push(xyArray);
-                }
-            });
-
-            moveableLocationInfo = {
-                moveableLocationArray: cannonsMoveableLocationArray,
-                // TODO: 添加过滤逻辑：炮的吃子方式
-                killableLocationArray: []
-            };
+            moveableLocationInfo = makeCannonsMoveableLocationInfo(currentXY);
         }
         // 棋子“兵”的可移动范围数据
         else if (chessPiece.equalCharacter(ChessPiece.CHARACTER_SOLDIERS)) {
