@@ -738,7 +738,18 @@ class Chessboard {
         }
         // 棋子“兵”的可移动范围数据
         else if (chessPiece.equalCharacter(ChessPiece.CHARACTER_SOLDIERS)) {
-            // TODO
+            moveableLocationInfo = makeMoveableLocationInfo(currentXY, 1, 0, true);
+
+            // 过滤逻辑：兵只能前进，不能后退
+            moveableLocationInfo = filterLocationArray(moveableLocationInfo, (
+                // Chessboard.getMoveDirection 返回值大于 0 则为前进方向，等于 0 为 平移
+                ([x, y]) => (Chessboard.getMoveDirection(chessPiece, y) >= 0)
+            ));
+            // 过滤逻辑：兵未过河时 不能平移
+            moveableLocationInfo = filterLocationArray(moveableLocationInfo, (
+                // 在己方领地（未过河）时，兵不能平移。在对方领地（已过河），兵可以平移
+                ([x, y]) => (isYInTerritoryArea(currentLocationY) ? (y != currentLocationY) : true)
+            ));
         }
 
         return moveableLocationInfo;
@@ -880,8 +891,8 @@ class Chessboard {
             // 缓存 原位置的棋子对象
             var originChessPiece = originLocationInfo.chessPiece;
 
-            // 当点击的不是激活棋子自身时，判断落子位置是否属于有效的移动范围（目前仅完整支持“车”类型的棋子数据，其它类型棋子支持不完善，“兵”没有限制移动规则）
-            if ((originLocationInfo !== targetLocationInfo) && (!originChessPiece.equalCharacter(ChessPiece.CHARACTER_SOLDIERS))) {
+            // 当点击的不是激活棋子自身时，判断落子位置是否属于有效的移动范围
+            if ((originLocationInfo !== targetLocationInfo)) {
                 // 移动范围有效性检测。TODO: 这里偷懒直接使用样式类判断，待重构
                 if (!targetLocationInfo.element.hasClass(CHESSPIECE_LOCATION_MOVEABLE_CLASSNAME)) {
                     console.warn(originChessPiece.makeInfo("[$side]方棋子[$name] 选择的目标位置，不在可移动的范围内"));
@@ -975,6 +986,27 @@ Chessboard.getNineGridArea = initLocationY => {
         minY,
         maxY
     }
+};
+
+/**
+ * 获取棋子的移动方向，用以判断棋子 前进、后退、平移
+ * @param {ChessPiece} chessPiece 棋子对象
+ * @param {number} targetLocationY 目标位置的纵坐标
+ * @return {number} 0 则表示平移。（已考虑棋子的进攻方向）大于 0 说明棋子向前进，小于 0 说明棋子向后退
+ */
+Chessboard.getMoveDirection = (chessPiece, targetLocationY) => {
+    var currentLocationY = chessPiece.currentLocationY;
+    // 纵坐标相等，则直接返回 0
+    if (currentLocationY == targetLocationY) {
+        return 0;
+    }
+
+    var diffY = targetLocationY - currentLocationY;
+    // 默认情况下，棋子前进时纵坐标值变大。而当棋子初始化纵坐标为 5~9 时，说明 棋子前进时 纵坐标值变小，此时需要反转前进方向
+    var isReverseForwardDirection = (chessPiece.initLocationY >= 5);
+
+    // 根据前进方向，返回 纵坐标差值（或差值的相反数）
+    return isReverseForwardDirection ? -diffY : diffY;
 };
 
 /**
